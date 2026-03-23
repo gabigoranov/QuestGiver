@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>QuestGiver</name>
+    </assembly>
+    <members>
+        <member name="T:QuestGiver.Data.Models.FriendGroup">
+            <summary>
+            Represents a group of friends.
+            </summary>
+        </member>
+        <member name="T:QuestGiver.Data.Models.Token">
+            <summary>
+            Defines a token class that represents an authentication token for a user.
+            </summary>
+        </member>
+        <member name="T:QuestGiver.Data.Models.User">
+            <summary>
+            The User class - represents a user in the system.
+            </summary>
+        </member>
+        <member name="T:QuestGiver.Data.Models.UserFriendGroup">
+            <summary>
+            A helper class to represent the many-to-many relationship between Users and FriendGroups.
+            </summary>
+        </member>
+        <member name="T:QuestGiver.Data.Models.UserSettings">
+            <summary>
+            Represents a set of configurable settings for a user.
+            </summary>
+        </member>
+        <member name="T:QuestGiver.Migrations.Init">
+            <inheritdoc />
+        </member>
+        <member name="M:QuestGiver.Migrations.Init.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:QuestGiver.Migrations.Init.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:QuestGiver.Migrations.Init.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:QuestGiver.Models.Common.AutoMapper">
+            <summary>
+            AutoMapper profile for mapping between data models and view models in the QuestGiver application.
+            </summary>
+        </member>
+    </members>
+</doc>

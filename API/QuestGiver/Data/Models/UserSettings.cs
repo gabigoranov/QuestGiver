@@ -8,6 +8,9 @@ namespace QuestGiver.Data.Models
     /// </summary>
     public class UserSettings
     {
+        [Key]
+        public Guid Id { get; set; }
+
         [Required]
         [ForeignKey(nameof(User))]
         public Guid UserId { get; set; }
