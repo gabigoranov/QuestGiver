@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.2.11408.102 d18.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuestGiver", "QuestGiver.csproj", "{BE9ABC4E-7445-42F0-85F6-4E5B972F077E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BE9ABC4E-7445-42F0-85F6-4E5B972F077E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE9ABC4E-7445-42F0-85F6-4E5B972F077E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE9ABC4E-7445-42F0-85F6-4E5B972F077E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE9ABC4E-7445-42F0-85F6-4E5B972F077E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {81EDC39F-A4B3-4C84-A344-92F2540B61D6}
+	EndGlobalSection
+EndGlobal
