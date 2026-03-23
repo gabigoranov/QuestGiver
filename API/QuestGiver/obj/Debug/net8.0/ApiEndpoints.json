@@ -1,0 +1,18 @@
+[
+  {
+    "ContainingType": "QuestGiver.Controllers.AuthController",
+    "Method": "Create",
+    "RelativePath": "api/Auth",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "model",
+        "Type": "QuestGiver.Models.Receive.CreateUserDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

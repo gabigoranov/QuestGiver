@@ -7,9 +7,14 @@ namespace QuestGiver.Models.Common
     /// </summary>
     public class AutoMapper : Profile
     {
+        /// <summary>
+        /// Creates maps.
+        /// </summary>
         public AutoMapper()
         {
-
+            this.CreateMap<Data.Models.User, Models.Send.UserDTO>().ReverseMap();
+            this.CreateMap<Data.Models.User, Models.Receive.CreateUserDTO>().ReverseMap();
+            this.CreateMap<Data.Models.Token, Models.Send.TokenDTO>().ReverseMap();
         }
     }
 }

@@ -117,3 +117,11 @@ D:\Projects\QuestGiver\API\QuestGiver\obj\Debug\net8.0\QuestGiver.xml
 D:\Projects\QuestGiver\API\QuestGiver\obj\Debug\net8.0\QuestGiver.pdb
 D:\Projects\QuestGiver\API\QuestGiver\obj\Debug\net8.0\QuestGiver.genruntimeconfig.cache
 D:\Projects\QuestGiver\API\QuestGiver\obj\Debug\net8.0\ref\QuestGiver.dll
+D:\Projects\QuestGiver\API\QuestGiver\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+D:\Projects\QuestGiver\API\QuestGiver\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+D:\Projects\QuestGiver\API\QuestGiver\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+D:\Projects\QuestGiver\API\QuestGiver\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+D:\Projects\QuestGiver\API\QuestGiver\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+D:\Projects\QuestGiver\API\QuestGiver\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+D:\Projects\QuestGiver\API\QuestGiver\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+D:\Projects\QuestGiver\API\QuestGiver\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
