@@ -35,7 +35,7 @@ namespace QuestGiver.Services.Users
         /// <inheritdoc />
         public async Task<AuthResponse> CreateUserAsync(CreateUserDTO model)
         {
-            if (_repo.AllReadonly<User>().Any(x => x.Email == model.Email)) 
+            if (await _repo.AllReadonly<User>().AnyAsync(x => x.Email == model.Email)) 
             {
                 // User with the same email already exists
                 throw new ArgumentException("A user with the same email already exists.");

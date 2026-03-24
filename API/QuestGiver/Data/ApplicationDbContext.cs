@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using QuestGiver.Data.Models;
 
 namespace QuestGiver.Data
 {
@@ -18,6 +19,10 @@ namespace QuestGiver.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Token>()
+            .HasIndex(t => t.RefreshToken)
+            .IsUnique();
 
             // Configure the composite key for the UserFriendGroup join table
             modelBuilder.Entity<Models.UserFriendGroup>()
