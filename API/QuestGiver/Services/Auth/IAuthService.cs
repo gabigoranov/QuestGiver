@@ -14,5 +14,13 @@ namespace QuestGiver.Services.Users
         /// <param name="model">The input user model.</param>
         /// <returns>A user dto ready to be sent to the frontend along with the token.</returns>
         public Task<AuthResponse> CreateUserAsync(CreateUserDTO model);
+
+        /// <summary>
+        /// Asynchronously verifies the user's login credentials and returns the authentication result.
+        /// </summary>
+        /// <param name="model">An object containing the user's login information, such as username and password. Cannot be null.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an AuthResponse indicating
+        /// whether authentication was successful and any related information.</returns>
+        public Task<AuthResponse> VerifyLoginAsync(LoginDTO model);
     }
 }

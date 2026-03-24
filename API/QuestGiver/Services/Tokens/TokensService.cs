@@ -59,7 +59,7 @@ namespace QuestGiver.Services.Tokens
             };
 
             Token? old = await _repo.All<Token>().FirstOrDefaultAsync(t => t.UserId == userId);
-            if (old != null) await _repo.DeleteAsync<Token>(old);
+            if (old != null) await _repo.DeleteAsync<Token>(old.Id);
 
             await _repo.AddAsync<Token>(res);
             await _repo.SaveChangesAsync();
@@ -109,6 +109,29 @@ namespace QuestGiver.Services.Tokens
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
+        }
+
+        /// <inheritdoc />
+        public async Task InvalidateTokenAsync(string refreshToken) => await _repo.ExecuteDeleteAsync<Token>(t => t.RefreshToken == refreshToken);
+
+        /// <inheritdoc />
+        public async Task<TokenDTO> RefreshTokenAsync(string refreshToken)
+        {
+            Token? token = await _repo.All<Token>().SingleOrDefaultAsync(x => x.RefreshToken == refreshToken);
+
+            if(token == null || token.IsExpired)
+            {
+                // Token does not exist or is expired, deny auth
+                throw new UnauthorizedAccessException("Invalid refresh token.");
+            }
+
+            token.RefreshToken = GenerateRefreshToken();
+            token.AccessToken = GenerateAccessToken(token.UserId);
+            
+            _repo.Update(token);
+            await _repo.SaveChangesAsync();
+
+            return _mapper.Map<TokenDTO>(token);
         }
     }
 }

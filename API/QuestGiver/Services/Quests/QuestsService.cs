@@ -1,6 +1,7 @@
 ﻿namespace QuestGiver.Services.Quests
 {
-    public class QuestsService
+    /// <inheritdoc />
+    public class QuestsService : IQuestsService
     {
     }
 }

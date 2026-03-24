@@ -23,6 +23,9 @@ namespace QuestGiver.Data.Models
         [ForeignKey(nameof(User))]
         public Guid UserId { get; set; }
 
+        [NotMapped]
+        public bool IsExpired => ExpirationDateTime < DateTime.UtcNow;
+
         public virtual User User { get; set; }
     }
 }
