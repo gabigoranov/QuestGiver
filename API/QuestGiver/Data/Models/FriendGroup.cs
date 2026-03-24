@@ -19,7 +19,7 @@ namespace QuestGiver.Data.Models
         [StringLength(200)]
         public string Description { get; set; }
 
-        public DateOnly DateCreated { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
         [ForeignKey(nameof(Quest))]
         public Guid? CurrentQuestId { get; set; }

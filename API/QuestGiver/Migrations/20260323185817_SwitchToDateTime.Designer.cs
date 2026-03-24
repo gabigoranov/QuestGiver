@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using QuestGiver.Data;
@@ -11,9 +12,11 @@ using QuestGiver.Data;
 namespace QuestGiver.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260323185817_SwitchToDateTime")]
+    partial class SwitchToDateTime
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,7 +51,7 @@ namespace QuestGiver.Migrations
 
                     b.HasIndex("CurrentQuestId");
 
-                    b.ToTable("FriendGroups", (string)null);
+                    b.ToTable("FriendGroups");
                 });
 
             modelBuilder.Entity("QuestGiver.Data.Models.Quest", b =>
@@ -83,7 +86,7 @@ namespace QuestGiver.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Quests", (string)null);
+                    b.ToTable("Quests");
                 });
 
             modelBuilder.Entity("QuestGiver.Data.Models.Token", b =>
@@ -109,7 +112,7 @@ namespace QuestGiver.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Tokens", (string)null);
+                    b.ToTable("Tokens");
                 });
 
             modelBuilder.Entity("QuestGiver.Data.Models.User", b =>
@@ -153,7 +156,7 @@ namespace QuestGiver.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("QuestGiver.Data.Models.UserFriendGroup", b =>
@@ -168,7 +171,7 @@ namespace QuestGiver.Migrations
 
                     b.HasIndex("FriendGroupId");
 
-                    b.ToTable("UserFriendGroups", (string)null);
+                    b.ToTable("UserFriendGroups");
                 });
 
             modelBuilder.Entity("QuestGiver.Data.Models.UserSettings", b =>
@@ -188,7 +191,7 @@ namespace QuestGiver.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("UserSettings", (string)null);
+                    b.ToTable("UserSettings");
                 });
 
             modelBuilder.Entity("QuestGiver.Data.Models.FriendGroup", b =>

@@ -11,7 +11,13 @@ namespace QuestGiver.Data.Models
         [Key]
         public int Id { get; set; }
 
-        public DateTime ExpirationDate { get; set; } = DateTime.UtcNow.AddDays(7);
+        public DateTime ExpirationDateTime { get; set; } = DateTime.UtcNow.AddDays(7);
+
+        [Required]
+        public string RefreshToken { get; set; }
+
+        [NotMapped]
+        public string AccessToken { get; set; }
 
         [Required]
         [ForeignKey(nameof(User))]

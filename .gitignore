@@ -5,5 +5,5 @@
 /API/QuestGiver/appsettings.json
 
 .vs/
-**/obj/
 **/bin/
+**/obj/
