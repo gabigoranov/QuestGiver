@@ -33,12 +33,12 @@ namespace QuestGiver.Data.Models
         public string? AvatarUrl { get; set; }
 
         // Navigation properties
-        public virtual Token Token { get; set; }
         public virtual UserSettings Settings { get; set; }
 
         // Many-to-many relationship with FriendGroup through UserFriendGroup
         public virtual ICollection<UserFriendGroup> UserFriendGroups { get; set; } = new List<UserFriendGroup>();
         public virtual ICollection<Quest> Quests { get; set; } = new List<Quest>();
+        public virtual ICollection<Token> Tokens { get; set; } = new List<Token>(); // Use a One-to-Many relationship for tokens to allow multiple active sessions on different devices
 
         [NotMapped]
         public virtual Quest CurrentQuest => Quests.Last(); // Runtime calculated property to get the most recent quest

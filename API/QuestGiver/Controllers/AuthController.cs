@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using QuestGiver.Models.Receive;
 using QuestGiver.Models.Send;
+using QuestGiver.Services.Tokens;
 using QuestGiver.Services.Users;
 
 namespace QuestGiver.Controllers
@@ -15,17 +17,18 @@ namespace QuestGiver.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly ITokensService _tokensService;
 
         /// <summary>
         /// Constructor for UsersController, which handles DI.
         /// </summary>
         /// <param name="authService">Holds user related business logic.</param>
-        public AuthController(IAuthService authService)
+        /// <param name="tokensService">Handles Auth Token related operations.</param>
+        public AuthController(IAuthService authService, ITokensService tokensService)
         {
             _authService = authService;
+            _tokensService = tokensService;
         }
-
-        // TODO: Create endpoints for: registration, login, profile management, password reset, get by id, etc
 
         /// <summary>
         /// Hnadles the registration of a new user, along with creating a valid JWT token for the user to use for authentication in future requests.
@@ -35,12 +38,51 @@ namespace QuestGiver.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUserDTO model)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             AuthResponse response = await _authService.CreateUserAsync(model);
             return Ok(response);
         }
 
+        /// <summary>
+        /// Handles the login of a user, along with creating a JWT token for future requests.
+        /// </summary>
+        /// <param name="model">The login info.</param>
+        /// <returns>An AuthResponse with the UserDTO and JWT.</returns>
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDTO model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            AuthResponse response = await _authService.VerifyLoginAsync(model);
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Supplies a new access and refresh token if the supplied one is not expired.
+        /// </summary>
+        /// <param name="refreshToken">The refresh token supplied by the frontend.</param>
+        /// <returns>A new TokenDTO.</returns>
+        [HttpPost("refresh")]
+        public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+        {
+            TokenDTO refreshed = await _tokensService.RefreshTokenAsync(refreshToken);
+            return Ok(refreshed);
+        }
+
+        /// <summary>
+        /// Invalidates ( Deletes ) a token or does nothing if the refreshToken is invalid.
+        /// </summary>
+        /// <param name="refreshToken">The refresh token.</param>
+        /// <returns>Nothing.</returns>
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> InvalidateRefreshToken([FromBody] string refreshToken)
+        {
+            await _tokensService.InvalidateTokenAsync(refreshToken);
+            return Ok();
+        }
     }
 }

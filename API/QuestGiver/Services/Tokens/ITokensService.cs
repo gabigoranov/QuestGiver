@@ -28,5 +28,19 @@ namespace QuestGiver.Services.Tokens
         /// <param name="userId">The user id to be linked with the token.</param>
         /// <returns>The created token.</returns>
         public Task<TokenDTO> CreateTokenAsync(Guid userId);
+
+        /// <summary>
+        /// Supplies a new acess token if the refresh token is still valid.
+        /// </summary>
+        /// <param name="refreshToken">The refresh token supplied by the frontend.</param>
+        /// <returns>The refreshed token.</returns>
+        public Task<TokenDTO> RefreshTokenAsync(string refreshToken);
+
+        /// <summary>
+        /// Invalidates ( Deletes ) the supplied refresh token.
+        /// </summary>
+        /// <param name="refreshToken">The refresh token.</param>
+        /// <returns>Nothing.</returns>
+        public Task InvalidateTokenAsync(string refreshToken);
     }
 }

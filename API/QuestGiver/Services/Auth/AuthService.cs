@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using QuestGiver.Data.Common;
 using QuestGiver.Data.Models;
 using QuestGiver.Models.Receive;
@@ -34,7 +35,7 @@ namespace QuestGiver.Services.Users
         /// <inheritdoc />
         public async Task<AuthResponse> CreateUserAsync(CreateUserDTO model)
         {
-            if (_repo.AllReadonly<User>().Any(x => x.Email == model.Email)) 
+            if (await _repo.AllReadonly<User>().AnyAsync(x => x.Email == model.Email)) 
             {
                 // User with the same email already exists
                 throw new ArgumentException("A user with the same email already exists.");
@@ -45,6 +46,25 @@ namespace QuestGiver.Services.Users
 
             await _repo.AddAsync(user);
             await _repo.SaveChangesAsync();
+
+            UserDTO userMap = _mapper.Map<UserDTO>(user);
+            TokenDTO token = await _tokensService.CreateTokenAsync(user.Id);
+
+            return new AuthResponse(userMap, token);
+        }
+
+        /// <inheritdoc />
+        public async Task<AuthResponse> VerifyLoginAsync(LoginDTO model)
+        {
+            User? user = await _repo.AllReadonly<User>().SingleOrDefaultAsync(u => u.Email == model.Email);
+
+            if (user == null)
+                throw new ArgumentException("No user with such email exists.");
+
+            var result = _passwordHasher.VerifyHashedPassword(user.Email, user.PasswordHash, model.Password);
+
+            if (result == PasswordVerificationResult.Failed)
+                throw new UnauthorizedAccessException("Supplied password does not match user profile.");
 
             UserDTO userMap = _mapper.Map<UserDTO>(user);
             TokenDTO token = await _tokensService.CreateTokenAsync(user.Id);

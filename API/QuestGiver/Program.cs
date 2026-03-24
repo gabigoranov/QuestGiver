@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuestGiver.Data;
 using QuestGiver.Data.Common;
+using QuestGiver.Services.Quests;
 using QuestGiver.Services.Tokens;
 using QuestGiver.Services.Users;
 using System.Text;
@@ -41,6 +42,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddScoped<IRepository, Repository>();
+builder.Services.AddScoped<IQuestsService, QuestsService>();
 builder.Services.AddScoped<ITokensService, TokensService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPasswordHasher<string>, PasswordHasher<string>>();
