@@ -48,7 +48,7 @@ namespace QuestGiver.Migrations
 
                     b.HasIndex("CurrentQuestId");
 
-                    b.ToTable("FriendGroups");
+                    b.ToTable("FriendGroups", (string)null);
                 });
 
             modelBuilder.Entity("QuestGiver.Data.Models.Quest", b =>
@@ -83,7 +83,7 @@ namespace QuestGiver.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Quests");
+                    b.ToTable("Quests", (string)null);
                 });
 
             modelBuilder.Entity("QuestGiver.Data.Models.Token", b =>
@@ -109,7 +109,7 @@ namespace QuestGiver.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Tokens");
+                    b.ToTable("Tokens", (string)null);
                 });
 
             modelBuilder.Entity("QuestGiver.Data.Models.User", b =>
@@ -153,7 +153,7 @@ namespace QuestGiver.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("QuestGiver.Data.Models.UserFriendGroup", b =>
@@ -168,7 +168,7 @@ namespace QuestGiver.Migrations
 
                     b.HasIndex("FriendGroupId");
 
-                    b.ToTable("UserFriendGroups");
+                    b.ToTable("UserFriendGroups", (string)null);
                 });
 
             modelBuilder.Entity("QuestGiver.Data.Models.UserSettings", b =>
@@ -188,7 +188,7 @@ namespace QuestGiver.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("UserSettings");
+                    b.ToTable("UserSettings", (string)null);
                 });
 
             modelBuilder.Entity("QuestGiver.Data.Models.FriendGroup", b =>

@@ -24,10 +24,6 @@ namespace QuestGiver.Models.Send
         [EmailAddress]
         public string Email { get; set; }
 
-        [Required]
-        [MinLength(8)]
-        public string PasswordHash { get; set; }
-
         public string? AvatarUrl { get; set; }
 
         // Fields for rewards system - XP, Level, etc.

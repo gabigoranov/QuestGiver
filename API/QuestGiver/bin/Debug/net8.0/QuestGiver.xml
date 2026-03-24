@@ -260,6 +260,18 @@
         <member name="M:QuestGiver.Migrations.SwitchToDateTime.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:QuestGiver.Migrations.Aiosdhuyiuwoa">
+            <inheritdoc />
+        </member>
+        <member name="M:QuestGiver.Migrations.Aiosdhuyiuwoa.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:QuestGiver.Migrations.Aiosdhuyiuwoa.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:QuestGiver.Migrations.Aiosdhuyiuwoa.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="T:QuestGiver.Models.Common.AutoMapper">
             <summary>
             AutoMapper profile for mapping between data models and view models in the QuestGiver application.
