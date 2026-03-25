@@ -50,6 +50,19 @@ namespace QuestGiver.Services.Groups
             return _mapper.Map<GroupDTO>(group);
         }
 
+        /// <inheritdoc/>
+        public async Task<GroupDTO> GetGroupsForUserAsync(Guid userId)
+        {
+            FriendGroup? group = await _repo.All<FriendGroup>().
+                Include(g => g.UserFriendGroups).
+                FirstOrDefaultAsync(g => g.UserFriendGroups.Any(ufg => ufg.UserId == userId));
+
+            if(group == null)
+                throw new ArgumentException("Invalid userId or no groups found for the user.");
+
+            return _mapper.Map<GroupDTO>(group);
+        }
+
         /// <inheritdoc />
         public async Task RemoveUserFromGroupAsync(Guid groupId, Guid userId)
         {
