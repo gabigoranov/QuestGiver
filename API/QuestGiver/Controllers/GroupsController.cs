@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using QuestGiver.Extensions;
 using QuestGiver.Models.Receive;
+using QuestGiver.Models.Send;
 using QuestGiver.Services.Groups;
 
 namespace QuestGiver.Controllers
@@ -24,6 +25,20 @@ namespace QuestGiver.Controllers
         public GroupsController(IGroupsService groupsService)
         {
             _groupsService = groupsService;
+        }
+
+        /// <summary>
+        /// Retrieves all friend groups that the authenticated user is a member of.
+        /// </summary>
+        /// <returns>A list of friend groups.</returns>
+        [HttpGet]
+        public async Task<IActionResult> GetUserGroups()
+        {
+            // Load userId from JWT token
+            Guid userId = User.GetUserId();
+
+            GroupDTO groups = await _groupsService.GetGroupsForUserAsync(userId);
+            return Ok(groups);
         }
 
         /// <summary>

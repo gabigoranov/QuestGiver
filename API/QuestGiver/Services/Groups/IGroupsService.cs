@@ -31,5 +31,12 @@ namespace QuestGiver.Services.Groups
         /// <param name="userId">The user id.</param>
         /// <returns></returns>
         Task RemoveUserFromGroupAsync(Guid groupId, Guid userId);
+
+        /// <summary>
+        /// Retrieves all friend groups that a user belongs to.
+        /// </summary>
+        /// <param name="userId">The id of the authenticated user.</param>
+        /// <returns>A list of friend groups.</returns>
+        Task<GroupDTO> GetGroupsForUserAsync(Guid userId);
     }
 }
