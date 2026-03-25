@@ -17,6 +17,7 @@ namespace QuestGiver.Models.Common
             this.CreateMap<Data.Models.Token, Models.Send.TokenDTO>().ReverseMap();
             this.CreateMap<Data.Models.FriendGroup, Models.Send.GroupDTO>().ReverseMap();
             this.CreateMap<Data.Models.FriendGroup, Models.Receive.CreateGroupDTO>().ReverseMap();
+            this.CreateMap<Data.Models.Quest, Models.Send.QuestDTO>().ReverseMap();
         }
     }
 }
