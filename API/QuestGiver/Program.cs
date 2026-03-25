@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuestGiver.Data;
 using QuestGiver.Data.Common;
+using QuestGiver.Services.Groups;
 using QuestGiver.Services.Quests;
 using QuestGiver.Services.Tokens;
 using QuestGiver.Services.Users;
@@ -45,6 +46,7 @@ builder.Services.AddScoped<IRepository, Repository>();
 builder.Services.AddScoped<IQuestsService, QuestsService>();
 builder.Services.AddScoped<ITokensService, TokensService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IGroupsService, GroupsService>();
 builder.Services.AddScoped<IPasswordHasher<string>, PasswordHasher<string>>();
 
 
