@@ -68,6 +68,9 @@ namespace QuestGiver.Controllers
         [HttpPost("refresh")]
         public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             TokenDTO refreshed = await _tokensService.RefreshTokenAsync(refreshToken);
             return Ok(refreshed);
         }
@@ -81,6 +84,9 @@ namespace QuestGiver.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> InvalidateRefreshToken([FromBody] string refreshToken)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             await _tokensService.InvalidateTokenAsync(refreshToken);
             return Ok();
         }
