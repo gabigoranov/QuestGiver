@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using QuestGiver.Models.Send;
 
 namespace QuestGiver.Models.Common
 {
@@ -19,6 +20,9 @@ namespace QuestGiver.Models.Common
             this.CreateMap<Data.Models.FriendGroup, Models.Receive.CreateGroupDTO>().ReverseMap();
             this.CreateMap<Data.Models.Quest, Models.Send.QuestDTO>().ReverseMap();
             this.CreateMap<Data.Models.Quest, Models.Receive.CreateQuestDTO>().ReverseMap();
+            this.CreateMap<Data.Models.User, GenerateQuestModel>()
+                .ForMember(x => x.UserBirthDate, cd => cd.MapFrom(map => map.BirthDate))
+                .ForMember(x => x.UserDescription, cd => cd.MapFrom(map => map.Description));
         }
     }
 }

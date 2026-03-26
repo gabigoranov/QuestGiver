@@ -1,6 +1,6 @@
 ﻿using QuestGiver.Data.Models;
 
-namespace QuestGiver.Data.Common
+namespace QuestGiver.Data.Constants
 {
     /// <summary>
     /// Expands the Quest model as the first quest of every friend group, given to the creator.

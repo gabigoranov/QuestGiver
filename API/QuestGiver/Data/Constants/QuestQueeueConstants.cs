@@ -1,4 +1,4 @@
-﻿namespace QuestGiver.Data.Common
+﻿namespace QuestGiver.Data.Constants
 {
     /// <summary>
     /// Defines constants related to the quest queeue management in the QuestGiver application.

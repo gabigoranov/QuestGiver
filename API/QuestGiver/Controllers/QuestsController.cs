@@ -43,5 +43,21 @@ namespace QuestGiver.Controllers
 
             return Ok(quest);
         }
+
+        /// <summary>
+        /// Completes a quest
+        /// </summary>
+        /// <param name="questId">The quest to be completed</param>
+        /// <returns>Nothing</returns>
+        [HttpPost("complete/{questId}")]
+        public async Task<IActionResult> Complete([FromRoute] Guid questId)
+        {
+            // Load userId from JWT token
+            Guid userId = User.GetUserId();
+
+            await _questsService.CompleteQuestAsync(questId, userId);
+
+            return Ok();
+        }
     }
 }
