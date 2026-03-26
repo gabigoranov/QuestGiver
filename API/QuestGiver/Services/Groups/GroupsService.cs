@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using QuestGiver.Data.Common;
+using QuestGiver.Data.Constants;
 using QuestGiver.Data.Models;
 using QuestGiver.Models.Receive;
 using QuestGiver.Models.Send;
