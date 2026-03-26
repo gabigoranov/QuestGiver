@@ -61,11 +61,82 @@ namespace QuestGiver.Services.Quests
             var response = await _chatClient.CompleteChatAsync(prompt);
             var content = response.Value.Content[0].Text;
 
-            // TODO: save quests to DB & Implement logic for calculating the scheduled date based on the last quest's scheduled date
+            // Deserialize generated content
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            GeneratedQuestDTO[]? deserialized = JsonSerializer.Deserialize<GeneratedQuestDTO[]>(content, options);
+
+            if (deserialized == null)
+                throw new ArgumentNullException("Could not generate quests.");
+
+            // Map the generated quests while managing the scheduled dates
+            await _repo.AddRangeAsync<Quest>(MapDeserializedGeneratedQuests(deserialized, groupId));
+            await _repo.SaveChangesAsync();
         }
 
         #region Helpers
 
+        /// <summary>
+        /// Maps an array of generated quest DTOs into Quest entities and assigns scheduling metadata.
+        /// </summary>
+        /// <param name="deserialized">
+        /// The array of generated quest DTOs that have been deserialized from an external source.
+        /// </param>
+        /// <param name="groupId">
+        /// The unique identifier of the friend group to which the quests will belong.
+        /// </param>
+        /// <returns>
+        /// An array of <see cref="Quest"/> entities with assigned scheduled dates and group association.
+        /// </returns>
+        /// <remarks>
+        /// Each quest is scheduled sequentially starting from today (UTC/local system date depending on environment),
+        /// with each subsequent quest assigned to the next day.
+        /// We assume deserialized is not empty.
+        /// </remarks>
+        private Quest[] MapDeserializedGeneratedQuests(GeneratedQuestDTO[] deserialized, Guid groupId)
+        {
+            DateTime scheduledDate = DateTime.UtcNow.Date;
+            Quest[] quests = _mapper.Map<Quest[]>(deserialized);
+            for (int i = 1; i <= deserialized.Length; i++)
+            {
+                quests[i].ScheduledDate = scheduledDate.AddDays(i);
+                quests[i].FriendGroupId = groupId;
+            }
+
+            return quests;
+        }
+
+        /// <summary>
+        /// Retrieves a friend group along with its associated users and determines the last user assigned a quest.
+        /// </summary>
+        /// <param name="groupId">
+        /// The unique identifier of the friend group to retrieve.
+        /// </param>
+        /// <returns>
+        /// A tuple containing:
+        /// <list type="bullet">
+        /// <item>
+        /// <description>The <see cref="FriendGroup"/> including its quests.</description>
+        /// </item>
+        /// <item>
+        /// <description>An array of <see cref="User"/> entities that belong to the group.</description>
+        /// </item>
+        /// <item>
+        /// <description>
+        /// The ID of the last user who was assigned a quest, or the first user in the group if no quests exist.
+        /// </description>
+        /// </item>
+        /// </list>
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// Thrown when the friend group does not exist or when no users are found in the group.
+        /// </exception>
+        /// <remarks>
+        /// The last user is determined based on the most recently scheduled quest (by <c>ScheduledDate</c>).
+        /// If the group has no quests, the first user in the retrieved users array is used as a fallback.
+        /// </remarks>
         private async Task<(FriendGroup Group, User[] Users, Guid LastUserId)> GetFriendGroupWithUsersAsync(Guid groupId)
         {
             var group = await _repo.AllReadonly<FriendGroup>()
@@ -89,16 +160,40 @@ namespace QuestGiver.Services.Quests
             return (group, users, lastUserId);
         }
 
-        private List<GenerateQuestModel> AssignQuestsToUsers(User[] users, Guid lastUserId, int count, Guid groupId)
+        /// <summary>
+        /// Assigns a sequence of quests to users in a round-robin fashion, starting after the last assigned user.
+        /// </summary>
+        /// <param name="users">
+        /// The array of users participating in the friend group.
+        /// </param>
+        /// <param name="lastUserId">
+        /// The ID of the last user who was assigned a quest. Assignment will continue from the next user.
+        /// </param>
+        /// <param name="count">
+        /// The number of quest assignments to generate.
+        /// </param>
+        /// <param name="groupId">
+        /// The unique identifier of the friend group for which the quests are being generated.
+        /// </param>
+        /// <returns>
+        /// A list of <see cref="GenerateQuestDTO"/> objects, each representing a quest assigned to a user.
+        /// </returns>
+        /// <remarks>
+        /// Users are assigned quests in a circular (round-robin) order.
+        /// If the end of the users array is reached, assignment continues from the beginning.
+        /// The assignment always starts from the user immediately following <paramref name="lastUserId"/>.
+        /// </remarks>
+        private List<GenerateQuestDTO> AssignQuestsToUsers(User[] users, Guid lastUserId, int count, Guid groupId)
         {
             var index = Array.FindIndex(users, u => u.Id == lastUserId);
-            var models = new List<GenerateQuestModel>();
+            var models = new List<GenerateQuestDTO>();
 
+            // Loop through users and assign generate quests
             for (int i = 0; i < count; i++)
             {
                 index = (index + 1) % users.Length;
                 var user = users[index];
-                var model = _mapper.Map<GenerateQuestModel>(user);
+                var model = _mapper.Map<GenerateQuestDTO>(user);
                 model.UserId = user.Id;
                 model.FriendGroupId = groupId;
                 models.Add(model);
@@ -107,27 +202,51 @@ namespace QuestGiver.Services.Quests
             return models;
         }
 
-        private string BuildQuestGenerationPrompt(List<GenerateQuestModel> users, int neededCount)
+        /// <summary>
+        /// Builds a prompt for the AI model to generate personalized quests for a group of users.
+        /// </summary>
+        /// <param name="users">
+        /// A list of users (as <see cref="GenerateQuestDTO"/>) for whom quests should be generated.
+        /// Each entry contains user-specific data used to personalize the quests.
+        /// </param>
+        /// <param name="neededCount">
+        /// The number of quests the AI should generate.
+        /// </param>
+        /// <returns>
+        /// A formatted string prompt instructing the AI to generate quests in a strict JSON structure.
+        /// </returns>
+        /// <remarks>
+        /// The prompt includes:
+        /// - Clear generation rules (fun, realistic, varied, one-day scope)
+        /// - Personalization instructions based on user descriptions
+        /// - A strict JSON output format to ensure consistent deserialization
+        /// - Serialized user data embedded directly into the prompt
+        ///
+        /// The AI is expected to return ONLY valid JSON matching the specified schema.
+        /// Any deviation (extra text, invalid JSON) may cause deserialization to fail.
+        /// </remarks>
+        private string BuildQuestGenerationPrompt(List<GenerateQuestDTO> users, int neededCount)
         {
             return $@"
-            You are generating fun daily challenges for a group of friends.
+            You are generating interesting daily challenges for a group of friends.
 
-            Generate {neededCount} quests.
+            Generate {neededCount} personalized quests by taking into account the specific user's description.
 
             Each quest must:
             - Be assigned to a specific user
-            - Be fun, social, and realistic
+            - Be fun, social, realistic ( compared to their age and interests ) and not cringe
             - Be doable in one day
             - Vary in type (physical, creative, social, etc.)
+            - Try to respect the user's wishes ( if they have any ) from their description
 
             Return ONLY valid JSON in this format:
 
             [
               {{
                 ""userId"": ""GUID"",
-                ""title"": ""short title"",
-                ""description"": ""detailed description"",
-                ""difficulty"": 1-5
+                ""title"": ""short title"", ( max length 50 )
+                ""description"": ""detailed description"", ( max length 400 )
+                ""rewardPoints"": 0-100
               }}
             ]
 
@@ -153,7 +272,20 @@ namespace QuestGiver.Services.Quests
         /// <inheritdoc />
         public async Task<QuestDTO> GetCurrentQuestForGroupAsync(Guid groupId, Guid userId)
         {
-            throw new NotImplementedException();
+            // Include navigational properties to then validate if the user trying to access the quest belongs to the friend group
+            Quest? model = await _repo.AllReadonly<Quest>()
+                .Include(x => x.FriendGroup)
+                .ThenInclude(x => x.UserFriendGroups)
+                .SingleOrDefaultAsync(x => x.FriendGroupId == groupId && x.ScheduledDate == DateTime.UtcNow.Date);
+
+            if(model == null)
+                throw new KeyNotFoundException("No quests found for the friend group.");
+
+            // If the user does not belong => UnauthorizedAccessException
+            if (!model.FriendGroup.UserFriendGroups.Any(x => x.UserId == userId))
+                throw new UnauthorizedAccessException("User does not belong to this friend group.");
+
+            return _mapper.Map<QuestDTO>(model);
         }
 
 
@@ -181,7 +313,7 @@ namespace QuestGiver.Services.Quests
         public async Task<QuestDTO> CompleteQuestAsync(Guid questId, Guid userId)
         {
             Quest? quest = await _repo.All<Quest>()
-                .FirstOrDefaultAsync(q => q.Id == questId);
+                .FirstOrDefaultAsync(q => q.Id == questId && q.UserId == userId);
 
             if(quest == null)
                 throw new KeyNotFoundException("Quest not found.");
@@ -191,9 +323,32 @@ namespace QuestGiver.Services.Quests
 
             quest.DateCompleted = DateTime.UtcNow;
 
-            await GenerateQuestsForGroupAsync(quest.FriendGroupId, CalculateNeededQuestsCount(quest.FriendGroupId));
+            // Attribute the reward points to the user
+            var user = await _repo.All<User>()
+                .FirstAsync(u => u.Id == userId); // We assume the user exists because we find the quest with his user id
 
+            // TODO: Eventually move this logic into a users service
+            user.ExperiencePoints += quest.RewardPoints;
+            if(user.ExperiencePoints >= user.NextLevelExperience)
+            {
+                user.Level++;
+                user.ExperiencePoints -= user.NextLevelExperience;
+                user.NextLevelExperience = (int)(user.NextLevelExperience * 1.25);
+            }
+
+            _repo.Update<User>(user);
             await _repo.SaveChangesAsync();
+
+            try
+            {
+                // Has it's own SaveChangesAsync if it is completed successfully
+                await GenerateQuestsForGroupAsync(quest.FriendGroupId, CalculateNeededQuestsCount(quest.FriendGroupId));
+            }
+            catch
+            {
+                // Retry once, if it fails again we move on
+                await GenerateQuestsForGroupAsync(quest.FriendGroupId, CalculateNeededQuestsCount(quest.FriendGroupId));
+            }
 
             return _mapper.Map<QuestDTO>(quest);
         }

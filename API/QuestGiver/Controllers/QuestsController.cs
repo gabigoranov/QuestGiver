@@ -55,9 +55,9 @@ namespace QuestGiver.Controllers
             // Load userId from JWT token
             Guid userId = User.GetUserId();
 
-            await _questsService.CompleteQuestAsync(questId, userId);
+            QuestDTO updated = await _questsService.CompleteQuestAsync(questId, userId);
 
-            return Ok();
+            return Ok(updated);
         }
     }
 }

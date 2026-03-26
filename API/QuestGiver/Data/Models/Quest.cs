@@ -9,11 +9,11 @@ namespace QuestGiver.Data.Models
         public Guid Id { get; set; }
 
         [Required]
-        [StringLength(30)]
+        [StringLength(50)]
         public string Title { get; set; }
 
         [Required]
-        [StringLength(200)]
+        [StringLength(400)]
         public string Description { get; set; }
 
         // ALWAYS SET TO MIDNIGHT UTC - this is the date the quest is scheduled for, not when it was created or completed
