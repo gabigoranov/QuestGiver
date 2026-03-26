@@ -2,13 +2,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace QuestGiver.Models.Send
+namespace QuestGiver.Models.Receive
 {
-    public class GroupDTO
+    public class CreateQuestDTO
     {
-        [Key]
-        public Guid Id { get; set; }
-
         [Required]
         [StringLength(30)]
         public string Title { get; set; }
@@ -18,5 +15,16 @@ namespace QuestGiver.Models.Send
         public string Description { get; set; }
 
         public DateTime ScheduledDate { get; set; }
+
+        [Required]
+        public int RewardPoints { get; set; }
+
+        [Required]
+        [ForeignKey(nameof(User))]
+        public Guid UserId { get; set; }
+
+        [Required]
+        [ForeignKey(nameof(FriendGroup))]
+        public Guid FriendGroupId { get; set; }
     }
 }

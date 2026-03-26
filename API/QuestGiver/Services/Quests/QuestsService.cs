@@ -1,6 +1,12 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using OpenAI;
+using OpenAI.Chat;
 using QuestGiver.Data.Common;
+using QuestGiver.Data.Models;
+using QuestGiver.Models.Receive;
 using QuestGiver.Models.Send;
+using System.Diagnostics;
 
 namespace QuestGiver.Services.Quests
 {
@@ -9,16 +15,25 @@ namespace QuestGiver.Services.Quests
     {
         private readonly IRepository _repo;
         private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
+        private readonly ChatClient _chatClient;
 
         /// <summary>
         /// Handles DI.
         /// </summary>
         /// <param name="repo">the db repo.</param>
         /// <param name="mapper">Automapper</param>
-        public QuestsService(IRepository repo, IMapper mapper)
+        /// <param name="configuration">The app settings configuration.</param>
+        /// <param name="aiClient">The open ai client</param>
+        public QuestsService(IRepository repo, IMapper mapper, IConfiguration configuration, OpenAIClient aiClient)
         {
             _repo = repo;
             _mapper = mapper;
+            _configuration = configuration;
+
+
+            var apiKeysSection = _configuration.GetSection("APIKeys");
+            _chatClient = aiClient.GetChatClient("gpt-5-nano");
         }
 
         /// <summary>
@@ -37,15 +52,60 @@ namespace QuestGiver.Services.Quests
         /// <param name="groupId">The id of the friend group.</param>
         /// <param name="neededCount">How many new quests should be generated.</param>
         /// <returns>Nothing.</returns>
-        private Task GenerateQuestsForGroupAsync(Guid groupId, int neededCount)
+        private async Task GenerateQuestsForGroupAsync(Guid groupId, int neededCount)
         {
-            throw new NotImplementedException();
+            var response = await _chatClient.CompleteChatAsync("Explain JWT in one sentence.");
+            Debug.WriteLine(response.Value.Content[0].Text);
         }
 
         /// <inheritdoc />
         public async Task<QuestDTO> GetCurrentQuestForGroupAsync(Guid groupId, Guid userId)
         {
             throw new NotImplementedException();
+        }
+
+
+        /// <inheritdoc />
+        public async Task<QuestDTO> CreateQuestAsync(Guid groupId, Guid userId, CreateQuestDTO questCreateDTO)
+        {
+            await GenerateQuestsForGroupAsync(groupId, 3);
+
+            // Check if the quest queue already has a quest for that date
+            var existingQuest = await _repo.All<Quest>()
+                .Where(q => q.FriendGroupId == groupId && q.ScheduledDate.Date == questCreateDTO.ScheduledDate.Date)
+                .FirstOrDefaultAsync();
+
+            if(existingQuest != null) throw new ArgumentException("Friend group already has a quest scheduled for that date.");
+
+            questCreateDTO.UserId = userId;
+            questCreateDTO.FriendGroupId = groupId;
+
+            var quest = _mapper.Map<Quest>(questCreateDTO);
+            await _repo.AddAsync<Quest>(quest);
+            await _repo.SaveChangesAsync();
+
+            return _mapper.Map<QuestDTO>(quest);    
+        }
+
+        /// <inheritdoc/>
+        public async Task<QuestDTO> CompleteQuestAsync(Guid questId, Guid userId)
+        {
+            Quest? quest = await _repo.All<Quest>()
+                .FirstOrDefaultAsync(q => q.Id == questId);
+
+            if(quest == null)
+                throw new KeyNotFoundException("Quest not found.");
+
+            if(quest.UserId != userId)
+                throw new UnauthorizedAccessException("User is not assigned to this quest.");
+
+            quest.DateCompleted = DateTime.UtcNow;
+
+            // TODO: Handle the generation of the next quest to fill te queue
+
+            await _repo.SaveChangesAsync();
+
+            return _mapper.Map<QuestDTO>(quest);
         }
     }
 }

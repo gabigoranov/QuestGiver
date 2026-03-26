@@ -41,7 +41,7 @@ namespace QuestGiver.Data.Models
         public virtual ICollection<Token> Tokens { get; set; } = new List<Token>(); // Use a One-to-Many relationship for tokens to allow multiple active sessions on different devices
 
         [NotMapped]
-        public virtual Quest CurrentQuest => Quests.Last(); // Runtime calculated property to get the most recent quest
+        public virtual IEnumerable<Quest> CurrentQuests => Quests.Where(x => DateTime.UtcNow.Date == x.ScheduledDate); // Runtime calculated property to get the most recent quest
 
         // Fields for rewards system - XP, Level, etc.
         public int Level { get; set; } = 1;

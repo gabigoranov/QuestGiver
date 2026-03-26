@@ -16,7 +16,8 @@ namespace QuestGiver.Data.Models
         [StringLength(200)]
         public string Description { get; set; }
 
-        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+        // ALWAYS SET TO MIDNIGHT UTC - this is the date the quest is scheduled for, not when it was created or completed
+        public DateTime ScheduledDate { get; set; } 
         public DateTime? DateCompleted { get; set; }
 
         [NotMapped]
@@ -30,5 +31,11 @@ namespace QuestGiver.Data.Models
         public Guid UserId { get; set; }
 
         public virtual User User { get; set; }
+
+        [Required]
+        [ForeignKey(nameof(FriendGroup))]
+        public Guid FriendGroupId { get; set; }
+
+        public virtual FriendGroup FriendGroup { get; set; }
     }
 }
