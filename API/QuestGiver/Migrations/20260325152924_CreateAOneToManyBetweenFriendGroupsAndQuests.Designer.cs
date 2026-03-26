@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using QuestGiver.Data;
@@ -11,9 +12,11 @@ using QuestGiver.Data;
 namespace QuestGiver.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260325152924_CreateAOneToManyBetweenFriendGroupsAndQuests")]
+    partial class CreateAOneToManyBetweenFriendGroupsAndQuests
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,10 +58,13 @@ namespace QuestGiver.Migrations
                     b.Property<DateTime?>("DateCompleted")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(400)
-                        .HasColumnType("character varying(400)");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<Guid>("FriendGroupId")
                         .HasColumnType("uuid");
@@ -66,13 +72,10 @@ namespace QuestGiver.Migrations
                     b.Property<int>("RewardPoints")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("ScheduledDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");

@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using QuestGiver.Data.Common;
+using QuestGiver.Data.Constants;
 using QuestGiver.Data.Models;
 using QuestGiver.Models.Receive;
 using QuestGiver.Models.Send;
+using QuestGiver.Services.Quests;
 
 namespace QuestGiver.Services.Groups
 {
@@ -12,16 +14,19 @@ namespace QuestGiver.Services.Groups
     {
         private readonly IRepository _repo;
         private readonly IMapper _mapper;
+        private readonly IQuestsService _questsService;
 
         /// <summary>
         /// DI constructor for GroupsService.
         /// </summary>
         /// <param name="repo">Repository for accessing the db.</param>
-        /// <param name="mapper">Mapper</param>
-        public GroupsService(IRepository repo, IMapper mapper)
+        /// <param name="mapper">Automapper.</param>
+        /// <param name="questsService">The quests service.</param>
+        public GroupsService(IRepository repo, IMapper mapper, IQuestsService questsService)
         {
             _repo = repo;
             _mapper = mapper;
+            _questsService = questsService;
         }
 
         /// <inheritdoc />
@@ -44,6 +49,10 @@ namespace QuestGiver.Services.Groups
 
             await _repo.AddAsync<FriendGroup>(group);
             await AddUserToGroupAsync(group.Id, userId); // Add the creator to the group
+
+            // assign the initial quest to the group (add friends quest)
+            await _questsService.CreateQuestAsync(group.Id, userId, 
+                _mapper.Map<CreateQuestDTO>(new InitialAddFriendsQuest(userId, group.Id)));
 
             await _repo.SaveChangesAsync();
 

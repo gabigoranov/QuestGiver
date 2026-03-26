@@ -1,9 +1,36 @@
-﻿namespace QuestGiver.Services.Quests
+﻿using QuestGiver.Models.Receive;
+using QuestGiver.Models.Send;
+
+namespace QuestGiver.Services.Quests
 {
     /// <summary>
     /// Defines the contract for quest-related operations within the application.
     /// </summary>
     public interface IQuestsService
     {
+        /// <summary>
+        /// Retrieves the active quest for a friend group and controls the update of the quest queeue for the group.
+        /// </summary>
+        /// <param name="groupId">The friend group id.</param>
+        /// <param name="userId">The user id.</param>
+        /// <returns>The QuestDTO.</returns>
+        public Task<QuestDTO> GetCurrentQuestForGroupAsync(Guid groupId, Guid userId);
+
+        /// <summary>
+        /// Creates a Quest entity based on the provided CreateQuestDTO and adds it to the database. It also updates the quest queue for the associated friend group.
+        /// </summary>
+        /// <param name="groupId">Id of the friend group.</param>
+        /// <param name="userId">Id of the quest user.</param>
+        /// <param name="questCreateDTO">Model to follow.</param>
+        /// <returns></returns>
+        public Task<QuestDTO> CreateQuestAsync(Guid groupId, Guid userId, CreateQuestDTO questCreateDTO);
+
+        /// <summary>
+        /// Marks a quest as completed for a given user and updates the quest queue for the associated friend group. It also returns the updated QuestDTO reflecting the completion status.
+        /// </summary>
+        /// <param name="questId">The quest id.</param>
+        /// <param name="userId">The user id.</param>
+        /// <returns>The updated questDTO.</returns>
+        public Task<QuestDTO> CompleteQuestAsync(Guid questId, Guid userId);
     }
 }

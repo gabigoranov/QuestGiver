@@ -21,13 +21,13 @@ namespace QuestGiver.Data.Models
 
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
-        [ForeignKey(nameof(Quest))]
-        public Guid? CurrentQuestId { get; set; }
+        [NotMapped]
+        public Guid? CurrentQuestId => Quests.FirstOrDefault(x => DateTime.UtcNow.Date == x.ScheduledDate)?.Id;
 
-        public virtual Quest? CurrentQuest { get; set; }
-
+        public virtual Quest? CurrentQuest => Quests.FirstOrDefault(x => DateTime.UtcNow.Date == x.ScheduledDate);
 
         // Many-to-many relationship with User through UserFriendGroup
         public virtual ICollection<UserFriendGroup> UserFriendGroups { get; set; } = new List<UserFriendGroup>();
+        public virtual ICollection<Quest> Quests { get; set; } = new List<Quest>();
     }
 }

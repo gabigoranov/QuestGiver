@@ -1,23 +1,23 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using QuestGiver.Data.Models;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace QuestGiver.Data.Models
+namespace QuestGiver.Models.Send
 {
-    public class Quest
+    public class QuestDTO
     {
         [Key]
         public Guid Id { get; set; }
 
         [Required]
-        [StringLength(50)]
+        [StringLength(30)]
         public string Title { get; set; }
 
         [Required]
-        [StringLength(400)]
+        [StringLength(200)]
         public string Description { get; set; }
 
-        // ALWAYS SET TO MIDNIGHT UTC - this is the date the quest is scheduled for, not when it was created or completed
-        public DateTime ScheduledDate { get; set; } 
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
         public DateTime? DateCompleted { get; set; }
 
         [NotMapped]
@@ -29,13 +29,5 @@ namespace QuestGiver.Data.Models
         [Required]
         [ForeignKey(nameof(User))]
         public Guid UserId { get; set; }
-
-        public virtual User User { get; set; }
-
-        [Required]
-        [ForeignKey(nameof(FriendGroup))]
-        public Guid FriendGroupId { get; set; }
-
-        public virtual FriendGroup FriendGroup { get; set; }
     }
 }

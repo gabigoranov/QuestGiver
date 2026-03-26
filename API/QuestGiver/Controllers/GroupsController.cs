@@ -83,7 +83,7 @@ namespace QuestGiver.Controllers
         /// </summary>
         /// <param name="groupId">The id of the group.</param>
         /// <returns>Nothing.</returns>
-        [HttpPost]
+        [HttpPost("leave")]
         public async Task<IActionResult> LeaveGroup([FromBody] Guid groupId)
         {
             if (!ModelState.IsValid)
