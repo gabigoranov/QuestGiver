@@ -13,6 +13,19 @@ using Xunit;
 
 namespace QuestGiver.Tests
 {
+    /// <summary>
+    /// Unit tests for <see cref="AuthService"/> using an in-memory database.
+    /// 
+    /// These tests cover the main authentication flows:
+    /// - user creation
+    /// - duplicate email prevention
+    /// - login verification
+    /// - incorrect password handling
+    /// - missing user handling
+    /// 
+    /// The token service is mocked so the tests focus only on the behavior of
+    /// <see cref="AuthService"/> itself.
+    /// </summary>
     public class AuthServiceTests : IDisposable
     {
         private readonly ApplicationDbContext _context;
@@ -22,6 +35,14 @@ namespace QuestGiver.Tests
         private readonly Mock<ITokensService> _tokensServiceMock;
         private readonly AuthService _authService;
 
+        /// <summary>
+        /// Initializes the test fixture with:
+        /// - an isolated in-memory database
+        /// - repository abstraction over the test context
+        /// - AutoMapper configured with the application's mapping profile
+        /// - a real password hasher for verifying password logic
+        /// - a mocked token service so token generation does not affect these tests
+        /// </summary>
         public AuthServiceTests()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -41,6 +62,7 @@ namespace QuestGiver.Tests
 
             _tokensServiceMock = new Mock<ITokensService>();
 
+            // Default token response used by all successful auth flows.
             _tokensServiceMock
                 .Setup(x => x.CreateTokenAsync(It.IsAny<Guid>()))
                 .ReturnsAsync((Guid userId) => new TokenDTO
@@ -58,6 +80,9 @@ namespace QuestGiver.Tests
                 _tokensServiceMock.Object);
         }
 
+        /// <summary>
+        /// Cleans up the in-memory database after each test to ensure isolation.
+        /// </summary>
         public void Dispose()
         {
             _context.Database.EnsureDeleted();
@@ -66,6 +91,12 @@ namespace QuestGiver.Tests
 
         #region Helpers
 
+        /// <summary>
+        /// Creates and persists a fully valid <see cref="User"/> entity.
+        /// 
+        /// The <see cref="User.PasswordHash"/> is always populated to satisfy EF Core
+        /// required-property validation and to allow login verification tests.
+        /// </summary>
         private async Task<User> SeedUserAsync(string email = "test@test.com", string password = "123456")
         {
             var user = new User
@@ -77,6 +108,7 @@ namespace QuestGiver.Tests
                 Description = "desc"
             };
 
+            // PasswordHash must be set before saving because the entity requires it.
             user.PasswordHash = _passwordHasher.HashPassword(user.Email, password);
 
             await _repo.AddAsync(user);
@@ -85,6 +117,9 @@ namespace QuestGiver.Tests
             return user;
         }
 
+        /// <summary>
+        /// Builds a valid <see cref="CreateUserDTO"/> used in user creation tests.
+        /// </summary>
         private CreateUserDTO CreateValidCreateDto(string email = "new@test.com")
         {
             return new CreateUserDTO
@@ -97,6 +132,9 @@ namespace QuestGiver.Tests
             };
         }
 
+        /// <summary>
+        /// Builds a valid <see cref="LoginDTO"/> used in login verification tests.
+        /// </summary>
         private LoginDTO CreateValidLoginDto(string email = "test@test.com", string password = "123456")
         {
             return new LoginDTO
@@ -110,6 +148,13 @@ namespace QuestGiver.Tests
 
         #region CreateUserAsync
 
+        /// <summary>
+        /// Verifies that creating a user with valid input:
+        /// - persists the user to the database
+        /// - returns an <see cref="AuthResponse"/>
+        /// - includes both user and token information in the response
+        /// - calls the token service exactly once
+        /// </summary>
         [Fact]
         public async Task CreateUserAsync_WithValidData_CreatesUserAndReturnsAuthResponse()
         {
@@ -129,6 +174,10 @@ namespace QuestGiver.Tests
             _tokensServiceMock.Verify(x => x.CreateTokenAsync(userInDb.Id), Times.Once);
         }
 
+        /// <summary>
+        /// Verifies that attempting to create a user with an email that already exists
+        /// throws <see cref="ArgumentException"/>.
+        /// </summary>
         [Fact]
         public async Task CreateUserAsync_WithDuplicateEmail_ThrowsArgumentException()
         {
@@ -144,6 +193,12 @@ namespace QuestGiver.Tests
 
         #region VerifyLoginAsync
 
+        /// <summary>
+        /// Verifies that logging in with valid credentials:
+        /// - returns an <see cref="AuthResponse"/>
+        /// - maps the correct user back into the response
+        /// - triggers token generation exactly once
+        /// </summary>
         [Fact]
         public async Task VerifyLoginAsync_WithValidCredentials_ReturnsAuthResponse()
         {
@@ -159,6 +214,10 @@ namespace QuestGiver.Tests
             _tokensServiceMock.Verify(x => x.CreateTokenAsync(user.Id), Times.Once);
         }
 
+        /// <summary>
+        /// Verifies that logging in with the correct email but wrong password
+        /// throws <see cref="UnauthorizedAccessException"/>.
+        /// </summary>
         [Fact]
         public async Task VerifyLoginAsync_WithWrongPassword_ThrowsUnauthorizedAccessException()
         {
@@ -170,6 +229,10 @@ namespace QuestGiver.Tests
                 () => _authService.VerifyLoginAsync(dto));
         }
 
+        /// <summary>
+        /// Verifies that attempting to log in with an email that does not exist
+        /// throws <see cref="ArgumentException"/>.
+        /// </summary>
         [Fact]
         public async Task VerifyLoginAsync_WithNonExistingUser_ThrowsArgumentException()
         {

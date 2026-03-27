@@ -53,6 +53,9 @@ namespace QuestGiver.Services.Quests
         /// </summary>
         private async Task GenerateQuestsForGroupAsync(Guid groupId, int neededCount)
         {
+            if(neededCount <= 0)
+                return;
+
             var group = await GetFriendGroupWithUsersAsync(groupId);
             var questModels = AssignQuestsToUsers(group.Users, group.LastUserId, neededCount, groupId);
 
@@ -99,9 +102,9 @@ namespace QuestGiver.Services.Quests
         {
             DateTime scheduledDate = DateTime.UtcNow.Date;
             Quest[] quests = _mapper.Map<Quest[]>(deserialized);
-            for (int i = 1; i <= deserialized.Length; i++)
+            for (int i = 0; i < deserialized.Length; i++)
             {
-                quests[i].ScheduledDate = scheduledDate.AddDays(i);
+                quests[i].ScheduledDate = scheduledDate.AddDays(i+1);
                 quests[i].FriendGroupId = groupId;
             }
 

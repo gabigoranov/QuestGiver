@@ -15,7 +15,16 @@ namespace QuestGiver.Tests
 {
     /// <summary>
     /// Unit tests for <see cref="TokensService"/> using an in-memory database.
-    /// Covers creation, refresh, invalidation, token generation and edge cases.
+    /// 
+    /// This test suite validates the full lifecycle of token handling including:
+    /// - Access token generation (JWT correctness and claims)
+    /// - Refresh token generation (uniqueness and validity)
+    /// - Token persistence in the database
+    /// - Token invalidation (revocation behavior)
+    /// - Token refresh logic (rotation, expiration, and security constraints)
+    /// 
+    /// The tests ensure that all critical authentication and authorization edge cases
+    /// are handled correctly, including multi-token scenarios and replay attack prevention.
     /// </summary>
     public class TokensServiceTests : IDisposable
     {
@@ -25,6 +34,14 @@ namespace QuestGiver.Tests
         private readonly IConfiguration _configuration;
         private readonly TokensService _tokensService;
 
+        /// <summary>
+        /// Initializes a new instance of the test class by configuring:
+        /// - In-memory database for isolation
+        /// - Repository abstraction
+        /// - AutoMapper profile
+        /// - JWT configuration settings
+        /// - Instance of <see cref="TokensService"/>
+        /// </summary>
         public TokensServiceTests()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -56,6 +73,10 @@ namespace QuestGiver.Tests
             _tokensService = new TokensService(_configuration, _repo, _mapper);
         }
 
+        /// <summary>
+        /// Cleans up the in-memory database after each test execution
+        /// to ensure full isolation between test cases.
+        /// </summary>
         public void Dispose()
         {
             _context.Database.EnsureDeleted();
@@ -64,6 +85,12 @@ namespace QuestGiver.Tests
 
         #region Helpers
 
+        /// <summary>
+        /// Creates and persists a fully valid <see cref="User"/> entity,
+        /// satisfying all required constraints (including PasswordHash).
+        /// 
+        /// This method ensures test stability by avoiding EF Core nullability violations.
+        /// </summary>
         private async Task<User> CreateUserAsync()
         {
             var user = new User
@@ -81,6 +108,16 @@ namespace QuestGiver.Tests
             return user;
         }
 
+        /// <summary>
+        /// Creates and persists a <see cref="Token"/> entity with configurable state.
+        /// 
+        /// Parameters allow simulation of:
+        /// - Revoked tokens
+        /// - Expired tokens
+        /// - Custom revocation timestamps
+        /// 
+        /// This helper is essential for testing edge cases in refresh and invalidation flows.
+        /// </summary>
         private async Task<Token> CreateTokenAsync(Guid userId, bool revoked = false, bool expired = false, DateTime? revokedAt = null)
         {
             var token = new Token
@@ -105,6 +142,12 @@ namespace QuestGiver.Tests
 
         #region CreateTokenAsync
 
+        /// <summary>
+        /// Verifies that creating a token for a valid user:
+        /// - Returns a valid <see cref="TokenDTO"/>
+        /// - Persists a corresponding <see cref="Token"/> in the database
+        /// - Initializes fields such as RefreshToken, CreatedAt, and ExpirationDateTime correctly
+        /// </summary>
         [Fact]
         public async Task CreateTokenAsync_WithValidData_CreatesTokenAndReturnsTokenDTO()
         {
@@ -127,6 +170,10 @@ namespace QuestGiver.Tests
             Assert.InRange(tokenInDb.CreatedAt, before.AddMinutes(-1), after.AddMinutes(1));
         }
 
+        /// <summary>
+        /// Verifies that only fields exposed in <see cref="TokenDTO"/> are persisted and mapped correctly,
+        /// ensuring no unintended data leakage or mismatch between entity and DTO.
+        /// </summary>
         [Fact]
         public async Task CreateTokenAsync_WithValidData_PersistsOnlyDTOFieldsToDatabase()
         {
@@ -145,6 +192,13 @@ namespace QuestGiver.Tests
 
         #region GenerateAccessToken
 
+        /// <summary>
+        /// Verifies that a valid JWT access token:
+        /// - Is generated successfully
+        /// - Contains correct issuer and audience
+        /// - Includes a NameIdentifier claim with the correct user ID
+        /// - Has a valid expiration timestamp in the future
+        /// </summary>
         [Fact]
         public void GenerateAccessToken_WithValidConfig_ReturnsJwtContainingUserIdClaim()
         {
@@ -167,6 +221,10 @@ namespace QuestGiver.Tests
             Assert.True(jwt.ValidTo > DateTime.UtcNow);
         }
 
+        /// <summary>
+        /// Verifies that missing critical JWT configuration values
+        /// results in an <see cref="ArgumentException"/> during token generation.
+        /// </summary>
         [Fact]
         public void GenerateAccessToken_WithMissingJwtConfig_ThrowsArgumentException()
         {
@@ -183,6 +241,10 @@ namespace QuestGiver.Tests
                 service.GenerateAccessToken(Guid.NewGuid()));
         }
 
+        /// <summary>
+        /// Verifies that invalid configuration values (non-numeric expiration)
+        /// throw an <see cref="ArgumentException"/> during service construction.
+        /// </summary>
         [Fact]
         public void Constructor_WithInvalidRefreshTokenExpirationDays_ThrowsArgumentException()
         {
@@ -204,6 +266,9 @@ namespace QuestGiver.Tests
 
         #region GenerateRefreshToken
 
+        /// <summary>
+        /// Verifies that generating a refresh token returns a non-empty string.
+        /// </summary>
         [Fact]
         public void GenerateRefreshToken_ReturnsNonEmptyString()
         {
@@ -212,6 +277,10 @@ namespace QuestGiver.Tests
             Assert.False(string.IsNullOrWhiteSpace(token));
         }
 
+        /// <summary>
+        /// Verifies that consecutive calls to generate refresh tokens produce unique values,
+        /// preventing token collisions.
+        /// </summary>
         [Fact]
         public void GenerateRefreshToken_ReturnsDifferentValuesOnConsecutiveCalls()
         {
@@ -225,6 +294,11 @@ namespace QuestGiver.Tests
 
         #region InvalidateTokenAsync
 
+        /// <summary>
+        /// Verifies that a valid refresh token is properly revoked:
+        /// - IsRevoked is set to true
+        /// - RevokedAt timestamp is assigned
+        /// </summary>
         [Fact]
         public async Task InvalidateTokenAsync_WithValidToken_RevokesToken()
         {
@@ -239,6 +313,10 @@ namespace QuestGiver.Tests
             Assert.NotNull(updated.RevokedAt);
         }
 
+        /// <summary>
+        /// Verifies that attempting to invalidate a non-existing token
+        /// does not affect any existing tokens.
+        /// </summary>
         [Fact]
         public async Task InvalidateTokenAsync_WithMissingToken_DoesNothing()
         {
@@ -257,6 +335,12 @@ namespace QuestGiver.Tests
 
         #region RefreshTokenAsync
 
+        /// <summary>
+        /// Verifies that refreshing a valid token:
+        /// - Rotates the refresh token
+        /// - Extends expiration
+        /// - Updates database state accordingly
+        /// </summary>
         [Fact]
         public async Task RefreshTokenAsync_WithValidToken_ReturnsUpdatedTokenDTO()
         {
@@ -279,6 +363,10 @@ namespace QuestGiver.Tests
             Assert.False(updated.IsRevoked);
         }
 
+        /// <summary>
+        /// Verifies that attempting to refresh an expired token
+        /// throws <see cref="UnauthorizedAccessException"/>.
+        /// </summary>
         [Fact]
         public async Task RefreshTokenAsync_WithExpiredToken_ThrowsUnauthorizedAccessException()
         {
@@ -289,6 +377,13 @@ namespace QuestGiver.Tests
                 () => _tokensService.RefreshTokenAsync(token.RefreshToken));
         }
 
+        /// <summary>
+        /// Verifies that refreshing a revoked token:
+        /// - Revokes all related tokens for the same user
+        /// - Throws <see cref="UnauthorizedAccessException"/>
+        /// 
+        /// This protects against reuse of compromised tokens.
+        /// </summary>
         [Fact]
         public async Task RefreshTokenAsync_WithRevokedToken_RevokesAllRelatedTokensAndThrows()
         {
@@ -315,6 +410,10 @@ namespace QuestGiver.Tests
             Assert.All(newlyRevokedTokens, t => Assert.NotNull(t.RevokedAt));
         }
 
+        /// <summary>
+        /// Verifies that providing an invalid (non-existing) refresh token
+        /// results in <see cref="UnauthorizedAccessException"/>.
+        /// </summary>
         [Fact]
         public async Task RefreshTokenAsync_WithInvalidToken_ThrowsUnauthorizedAccessException()
         {
@@ -324,6 +423,12 @@ namespace QuestGiver.Tests
 
         #endregion
 
+        /// <summary>
+        /// Verifies that when refreshing a revoked token:
+        /// - Already revoked tokens remain revoked
+        /// - Active tokens become revoked
+        /// - No token is unintentionally reactivated
+        /// </summary>
         [Fact]
         public async Task RefreshTokenAsync_WithRevokedToken_RevokesActiveRelatedTokens_AndKeepsAlreadyRevokedTokensRevoked()
         {
@@ -358,6 +463,13 @@ namespace QuestGiver.Tests
             Assert.True(activeToken.IsRevoked);
         }
 
+        /// <summary>
+        /// Verifies that when multiple active tokens exist for a user:
+        /// - Only the targeted token is rotated during refresh
+        /// - Other tokens remain unchanged and valid
+        /// 
+        /// This ensures proper isolation between sessions/devices.
+        /// </summary>
         [Fact]
         public async Task RefreshTokenAsync_WhenUserHasMultipleActiveTokens_OnlyTargetTokenRotates()
         {
@@ -389,6 +501,13 @@ namespace QuestGiver.Tests
             Assert.False(updatedSibling.IsRevoked);
         }
 
+        /// <summary>
+        /// Verifies that once a refresh token has been used:
+        /// - It becomes invalid (cannot be reused)
+        /// - Any subsequent attempt to use it throws <see cref="UnauthorizedAccessException"/>
+        /// 
+        /// This prevents replay attacks and enforces one-time token usage.
+        /// </summary>
         [Fact]
         public async Task RefreshTokenAsync_OldRefreshTokenBecomesUnusableAfterRotation()
         {
