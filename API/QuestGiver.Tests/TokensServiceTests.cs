@@ -56,12 +56,13 @@ namespace QuestGiver.Tests
             _tokensService = new TokensService(_configuration, _repo, _mapper);
         }
 
-        #region Helpers
         public void Dispose()
         {
             _context.Database.EnsureDeleted();
             _context.Dispose();
         }
+
+        #region Helpers
 
         private async Task<User> CreateUserAsync()
         {
