@@ -37,7 +37,7 @@ namespace QuestGiver.Controllers
             // Load userId from JWT token
             Guid userId = User.GetUserId();
 
-            GroupDTO groups = await _groupsService.GetGroupsForUserAsync(userId);
+            List<GroupDTO> groups = await _groupsService.GetGroupsForUserAsync(userId);
             return Ok(groups);
         }
 

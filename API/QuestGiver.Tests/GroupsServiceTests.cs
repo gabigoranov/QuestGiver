@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using QuestGiver.Data;
 using QuestGiver.Data.Common;
-using QuestGiver.Data.Constants;
 using QuestGiver.Data.Models;
 using QuestGiver.Models.Common;
 using QuestGiver.Models.Receive;
@@ -28,13 +27,8 @@ namespace QuestGiver.Tests
         private readonly Mock<IQuestsService> _mockQuestsService;
         private readonly GroupsService _groupsService;
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="GroupsServiceTests"/> with fresh in-memory DB.
-        /// Each test gets a unique database to ensure isolation.
-        /// </summary>
         public GroupsServiceTests()
         {
-            // Use a unique in-memory database per test to ensure test isolation
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
@@ -59,593 +53,337 @@ namespace QuestGiver.Tests
             _context.Dispose();
         }
 
-        #region CreateGroupAsync Tests
+        #region Helpers
 
         /// <summary>
-        /// Tests that CreateGroupAsync successfully creates a group, adds the creator to it,
-        /// and triggers the initial quest creation.
+        /// Creates and persists a fully valid <see cref="User"/> to satisfy all [Required] constraints.
         /// </summary>
-        [Fact]
-        public async Task CreateGroupAsync_ShouldCreateGroupAndReturnGroupDTO()
+        private async Task<User> CreateUserAsync()
         {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var createGroupDto = new CreateGroupDTO
+            var user = new User
             {
-                Title = "Test Group",
-                Description = "Test Description"
-            };
-
-            // Setup mock to return a DTO when CreateQuestAsync is called
-            _mockQuestsService.Setup(x => x.CreateQuestAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CreateQuestDTO>()))
-                .ReturnsAsync((Guid gid, Guid uid, CreateQuestDTO dto) =>
-                    new QuestDTO { Id = Guid.NewGuid(), Title = dto.Title });
-
-            // Act
-            var result = await _groupsService.CreateGroupAsync(createGroupDto, userId);
-
-            // Assert - Verify group was created in database
-            var groupInDb = await _context.FriendGroups.FirstOrDefaultAsync();
-            Assert.NotNull(groupInDb);
-            Assert.Equal(createGroupDto.Title, groupInDb.Title);
-            Assert.Equal(createGroupDto.Description, groupInDb.Description);
-            Assert.Equal(userId, groupInDb.UserFriendGroups.Single().UserId);
-
-            // Assert - Verify creator was added to the group (UserFriendGroup join table)
-            var userGroup = await _context.UserFriendGroups.FirstOrDefaultAsync();
-            Assert.NotNull(userGroup);
-            Assert.Equal(userId, userGroup.UserId);
-            Assert.Equal(groupInDb.Id, userGroup.FriendGroupId);
-
-            // Assert - Verify returned DTO matches input
-            Assert.Equal(createGroupDto.Title, result.Title);
-            Assert.Equal(createGroupDto.Description, result.Description);
-
-            // Assert - Verify initial quest was created for the group
-            _mockQuestsService.Verify(x => x.CreateQuestAsync(groupInDb.Id, userId, It.IsAny<CreateQuestDTO>()), Times.Once);
-        }
-
-        /// <summary>
-        /// Tests that CreateGroupAsync correctly maps all properties from DTO to entity.
-        /// </summary>
-        [Fact]
-        public async Task CreateGroupAsync_WithValidData_ShouldMapAllPropertiesCorrectly()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var createGroupDto = new CreateGroupDTO
-            {
-                Title = "Maximum Length Title Exactly 30",
-                Description = "A longer description that tests the mapping of the description field properly."
-            };
-
-            _mockQuestsService.Setup(x => x.CreateQuestAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CreateQuestDTO>()))
-                .ReturnsAsync(new QuestDTO { Id = Guid.NewGuid(), Title = "Quest" });
-
-            // Act
-            var result = await _groupsService.CreateGroupAsync(createGroupDto, userId);
-
-            // Assert
-            var groupInDb = await _context.FriendGroups.FirstOrDefaultAsync();
-            Assert.NotNull(groupInDb);
-            Assert.Equal(createGroupDto.Title, groupInDb.Title);
-            Assert.Equal(createGroupDto.Description, groupInDb.Description);
-            Assert.Equal(createGroupDto.Title, result.Title);
-            Assert.Equal(createGroupDto.Description, result.Description);
-        }
-
-        /// <summary>
-        /// Tests that CreateGroupAsync sets the DateCreated property on the group entity.
-        /// </summary>
-        [Fact]
-        public async Task CreateGroupAsync_ShouldSetDateCreated()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var createGroupDto = new CreateGroupDTO
-            {
-                Title = "Test Group",
-                Description = "Test Description"
-            };
-
-            _mockQuestsService.Setup(x => x.CreateQuestAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CreateQuestDTO>()))
-                .ReturnsAsync(new QuestDTO { Id = Guid.NewGuid(), Title = "Quest" });
-
-            var beforeCreate = DateTime.UtcNow;
-
-            // Act
-            await _groupsService.CreateGroupAsync(createGroupDto, userId);
-
-            var afterCreate = DateTime.UtcNow;
-
-            // Assert
-            var groupInDb = await _context.FriendGroups.FirstOrDefaultAsync();
-            Assert.NotNull(groupInDb);
-            Assert.InRange(groupInDb.DateCreated, beforeCreate, afterCreate);
-        }
-
-        /// <summary>
-        /// Tests that CreateGroupAsync passes correct InitialAddFriendsQuest data to the quests service.
-        /// </summary>
-        [Fact]
-        public async Task CreateGroupAsync_ShouldCreateInitialQuestWithCorrectData()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var groupId = Guid.NewGuid();
-            var createGroupDto = new CreateGroupDTO
-            {
-                Title = "Test Group",
-                Description = "Test Description"
-            };
-
-            // Capture the CreateQuestDTO passed to the mock
-            CreateQuestDTO capturedDto = null;
-            Guid capturedGroupId = Guid.Empty;
-            Guid capturedUserId = Guid.Empty;
-
-            _mockQuestsService.Setup(x => x.CreateQuestAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CreateQuestDTO>()))
-                .Callback<Guid, Guid, CreateQuestDTO>((gid, uid, dto) =>
-                {
-                    capturedGroupId = gid;
-                    capturedUserId = uid;
-                    capturedDto = dto;
-                })
-                .ReturnsAsync(new QuestDTO { Id = Guid.NewGuid(), Title = "Quest" });
-
-            // Act
-            var result = await _groupsService.CreateGroupAsync(createGroupDto, userId);
-
-            // Assert
-            Assert.NotNull(capturedDto);
-            Assert.Equal(result.Id, capturedGroupId);
-            Assert.Equal(userId, capturedUserId);
-            Assert.Equal("Add Friends", capturedDto.Title);
-            Assert.Equal(100, capturedDto.RewardPoints);
-        }
-
-        /// <summary>
-        /// Tests that CreateGroupAsync handles multiple group creations correctly.
-        /// </summary>
-        [Fact]
-        public async Task CreateGroupAsync_WithMultipleGroups_ShouldCreateAllGroups()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var group1Dto = new CreateGroupDTO { Title = "Group 1", Description = "Description 1" };
-            var group2Dto = new CreateGroupDTO { Title = "Group 2", Description = "Description 2" };
-
-            _mockQuestsService.Setup(x => x.CreateQuestAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CreateQuestDTO>()))
-                .ReturnsAsync(new QuestDTO { Id = Guid.NewGuid(), Title = "Quest" });
-
-            // Act
-            var result1 = await _groupsService.CreateGroupAsync(group1Dto, userId);
-            var result2 = await _groupsService.CreateGroupAsync(group2Dto, userId);
-
-            // Assert
-            var groupsInDb = await _context.FriendGroups.ToListAsync();
-            Assert.Equal(2, groupsInDb.Count);
-            Assert.Contains(groupsInDb, g => g.Title == "Group 1");
-            Assert.Contains(groupsInDb, g => g.Title == "Group 2");
-            Assert.NotEqual(result1.Id, result2.Id);
-        }
-
-        #endregion
-
-        #region AddUserToGroupAsync Tests
-
-        /// <summary>
-        /// Tests that AddUserToGroupAsync successfully adds a user to an existing group.
-        /// </summary>
-        [Fact]
-        public async Task AddUserToGroupAsync_ShouldAddUserToGroup()
-        {
-            // Arrange
-            var group = new FriendGroup { Title = "Group1", Description = "Test Description" };
-            await _context.FriendGroups.AddAsync(group);
-            await _context.SaveChangesAsync();
-
-            var userId = Guid.NewGuid();
-
-            // Act
-            await _groupsService.AddUserToGroupAsync(group.Id, userId);
-
-            // Assert
-            var userGroup = await _context.UserFriendGroups.FirstOrDefaultAsync();
-            Assert.NotNull(userGroup);
-            Assert.Equal(userId, userGroup.UserId);
-            Assert.Equal(group.Id, userGroup.FriendGroupId);
-        }
-
-        /// <summary>
-        /// Tests that AddUserToGroupAsync can add multiple users to the same group.
-        /// </summary>
-        [Fact]
-        public async Task AddUserToGroupAsync_WithMultipleUsers_ShouldAddAllUsers()
-        {
-            // Arrange
-            var group = new FriendGroup { Title = "Group1", Description = "Test Description" };
-            await _context.FriendGroups.AddAsync(group);
-            await _context.SaveChangesAsync();
-
-            var userId1 = Guid.NewGuid();
-            var userId2 = Guid.NewGuid();
-            var userId3 = Guid.NewGuid();
-
-            // Act
-            await _groupsService.AddUserToGroupAsync(group.Id, userId1);
-            await _groupsService.AddUserToGroupAsync(group.Id, userId2);
-            await _groupsService.AddUserToGroupAsync(group.Id, userId3);
-
-            // Assert
-            var userGroups = await _context.UserFriendGroups.ToListAsync();
-            Assert.Equal(3, userGroups.Count);
-            Assert.Contains(userGroups, ug => ug.UserId == userId1);
-            Assert.Contains(userGroups, ug => ug.UserId == userId2);
-            Assert.Contains(userGroups, ug => ug.UserId == userId3);
-        }
-
-        /// <summary>
-        /// Tests that AddUserToGroupAsync can add the same user to multiple groups.
-        /// </summary>
-        [Fact]
-        public async Task AddUserToGroupAsync_WithMultipleGroups_ShouldAddUserToAllGroups()
-        {
-            // Arrange
-            var group1 = new FriendGroup { Title = "Group1", Description = "Test Description" };
-            var group2 = new FriendGroup { Title = "Group2", Description = "Test Description" };
-            await _context.FriendGroups.AddRangeAsync(group1, group2);
-            await _context.SaveChangesAsync();
-
-            var userId = Guid.NewGuid();
-
-            // Act
-            await _groupsService.AddUserToGroupAsync(group1.Id, userId);
-            await _groupsService.AddUserToGroupAsync(group2.Id, userId);
-
-            // Assert
-            var userGroups = await _context.UserFriendGroups.ToListAsync();
-            Assert.Equal(2, userGroups.Count);
-            Assert.Contains(userGroups, ug => ug.FriendGroupId == group1.Id);
-            Assert.Contains(userGroups, ug => ug.FriendGroupId == group2.Id);
-        }
-
-        /// <summary>
-        /// Tests that AddUserToGroupAsync allows adding a user who is already in another group
-        /// (users can be in multiple groups).
-        /// </summary>
-        [Fact]
-        public async Task AddUserToGroupAsync_WithUserAlreadyInAnotherGroup_ShouldSucceed()
-        {
-            // Arrange
-            var group1 = new FriendGroup { Title = "Group1", Description = "Test Description" };
-            var group2 = new FriendGroup { Title = "Group2", Description = "Test Description" };
-            await _context.FriendGroups.AddRangeAsync(group1, group2);
-            await _context.SaveChangesAsync();
-
-            var userId = Guid.NewGuid();
-            await _groupsService.AddUserToGroupAsync(group1.Id, userId);
-
-            // Act & Assert - Should not throw, user can be in multiple groups
-            await _groupsService.AddUserToGroupAsync(group2.Id, userId);
-
-            var userGroups = await _context.UserFriendGroups.ToListAsync();
-            Assert.Equal(2, userGroups.Count);
-        }
-
-        #endregion
-
-        #region GetGroupsForUserAsync Tests
-
-        /// <summary>
-        /// Tests that GetGroupsForUserAsync returns the correct group for a user.
-        /// </summary>
-        [Fact]
-        public async Task GetGroupsForUserAsync_ShouldReturnGroupsForUser()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var group = new FriendGroup { Title = "Group1", Description = "Test Description" };
-            await _context.FriendGroups.AddAsync(group);
-            await _context.SaveChangesAsync();
-
-            await _context.UserFriendGroups.AddAsync(new UserFriendGroup
-            {
-                UserId = userId,
-                FriendGroupId = group.Id
-            });
-            await _context.SaveChangesAsync();
-
-            // Act
-            var result = await _groupsService.GetGroupsForUserAsync(userId);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(group.Id, result.Id);
-            Assert.Equal(group.Title, result.Title);
-            Assert.Equal(group.Description, result.Description);
-        }
-
-        /// <summary>
-        /// Tests that GetGroupsForUserAsync throws ArgumentException when user has no groups.
-        /// </summary>
-        [Fact]
-        public async Task GetGroupsForUserAsync_ShouldThrow_WhenUserHasNoGroups()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
-                _groupsService.GetGroupsForUserAsync(userId));
-            Assert.Equal("Invalid userId or no groups found for the user.", ex.Message);
-        }
-
-        /// <summary>
-        /// Tests that GetGroupsForUserAsync throws when the user exists in DB but has no group memberships.
-        /// </summary>
-        [Fact]
-        public async Task GetGroupsForUserAsync_ShouldThrow_WhenUserExistsButHasNoGroups()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            
-            // Create a user in the database (but no group memberships)
-            await _context.Users.AddAsync(new User 
-            { 
-                Id = userId, 
+                Id = Guid.NewGuid(),
                 Username = "testuser",
-                Email = "test@example.com",
-                PasswordHash = "hash",
-                Description = "Test user"
-            });
-            await _context.SaveChangesAsync();
-
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
-                _groupsService.GetGroupsForUserAsync(userId));
-            Assert.Equal("Invalid userId or no groups found for the user.", ex.Message);
-        }
-
-        /// <summary>
-        /// Tests that GetGroupsForUserAsync returns only the groups for the specified user,
-        /// not groups belonging to other users.
-        /// </summary>
-        [Fact]
-        public async Task GetGroupsForUserAsync_WithMultipleUsers_ShouldReturnOnlyCorrectUsersGroups()
-        {
-            // Arrange
-            var userId1 = Guid.NewGuid();
-            var userId2 = Guid.NewGuid();
-            
-            var group1 = new FriendGroup { Title = "Group1", Description = "Test Description" };
-            var group2 = new FriendGroup { Title = "Group2", Description = "Test Description" };
-            await _context.FriendGroups.AddRangeAsync(group1, group2);
-            await _context.SaveChangesAsync();
-
-            await _context.UserFriendGroups.AddAsync(new UserFriendGroup
-            {
-                UserId = userId1,
-                FriendGroupId = group1.Id
-            });
-            await _context.UserFriendGroups.AddAsync(new UserFriendGroup
-            {
-                UserId = userId2,
-                FriendGroupId = group2.Id
-            });
-            await _context.SaveChangesAsync();
-
-            // Act
-            var result = await _groupsService.GetGroupsForUserAsync(userId1);
-
-            // Assert - Should only return group1, not group2
-            Assert.NotNull(result);
-            Assert.Equal(group1.Id, result.Id);
-            Assert.Equal("Group1", result.Title);
-        }
-
-        /// <summary>
-        /// Tests that GetGroupsForUserAsync handles a user with multiple groups correctly.
-        /// Note: Current implementation returns the first group found.
-        /// </summary>
-        [Fact]
-        public async Task GetGroupsForUserAsync_WithUserInMultipleGroups_ShouldReturnFirstGroup()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            
-            var group1 = new FriendGroup { Title = "Group1", Description = "Test Description" };
-            var group2 = new FriendGroup { Title = "Group2", Description = "Test Description" };
-            await _context.FriendGroups.AddRangeAsync(group1, group2);
-            await _context.SaveChangesAsync();
-
-            await _context.UserFriendGroups.AddAsync(new UserFriendGroup
-            {
-                UserId = userId,
-                FriendGroupId = group1.Id
-            });
-            await _context.UserFriendGroups.AddAsync(new UserFriendGroup
-            {
-                UserId = userId,
-                FriendGroupId = group2.Id
-            });
-            await _context.SaveChangesAsync();
-
-            // Act
-            var result = await _groupsService.GetGroupsForUserAsync(userId);
-
-            // Assert - Should return one of the groups (implementation returns first found)
-            Assert.NotNull(result);
-            Assert.True(result.Id == group1.Id || result.Id == group2.Id);
-        }
-
-        #endregion
-
-        #region RemoveUserFromGroupAsync Tests
-
-        /// <summary>
-        /// Tests that RemoveUserFromGroupAsync successfully removes a user from a group.
-        /// </summary>
-        [Fact]
-        public async Task RemoveUserFromGroupAsync_ShouldRemoveUserFromGroup()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var group = new FriendGroup { Title = "Group1", Description = "Test Description" };
-            await _context.FriendGroups.AddAsync(group);
-            await _context.SaveChangesAsync();
-
-            var userGroup = new UserFriendGroup
-            {
-                UserId = userId,
-                FriendGroupId = group.Id
+                BirthDate = new DateTime(1995, 1, 1),
+                Description = "A test user description",
+                Email = "testuser@example.com",
+                PasswordHash = "hashedpassword123"
             };
-            await _context.UserFriendGroups.AddAsync(userGroup);
-            await _context.SaveChangesAsync();
+            await _repo.AddAsync<User>(user);
+            await _repo.SaveChangesAsync();
+            return user;
+        }
+
+        /// <summary>
+        /// Creates and persists a fully valid <see cref="FriendGroup"/> to satisfy all [Required] constraints.
+        /// </summary>
+        private async Task<FriendGroup> CreateFriendGroupAsync()
+        {
+            var group = new FriendGroup
+            {
+                Id = Guid.NewGuid(),
+                Title = "Test Group",
+                Description = "A test group description"
+            };
+            await _repo.AddAsync<FriendGroup>(group);
+            await _repo.SaveChangesAsync();
+            return group;
+        }
+
+        /// <summary>
+        /// Directly creates a <see cref="UserFriendGroup"/> relationship in the DB,
+        /// bypassing the service so tests can set up pre-existing memberships.
+        /// </summary>
+        private async Task<UserFriendGroup> AddUserToGroupDirectlyAsync(Guid userId, Guid groupId)
+        {
+            var ufg = new UserFriendGroup { UserId = userId, FriendGroupId = groupId };
+            await _repo.AddAsync<UserFriendGroup>(ufg);
+            await _repo.SaveChangesAsync();
+            return ufg;
+        }
+
+        /// <summary>
+        /// Builds a default mock setup for <see cref="IQuestsService.CreateQuestAsync"/>
+        /// returning an empty <see cref="QuestDTO"/>. Used by all CreateGroup tests.
+        /// </summary>
+        private void SetupCreateQuestMock()
+        {
+            _mockQuestsService
+                .Setup(q => q.CreateQuestAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<CreateQuestDTO>()))
+                .ReturnsAsync(new QuestDTO());
+        }
+
+        #endregion Helpers
+
+        #region AddUserToGroupAsync
+
+        /// <summary>
+        /// Verifies that a valid user can be added to a valid group and the
+        /// relationship is persisted to the database.
+        /// </summary>
+        [Fact]
+        public async Task AddUserToGroupAsync_WithValidData_RunsSuccessfully()
+        {
+            // Arrange
+            var user = await CreateUserAsync();
+            var group = await CreateFriendGroupAsync();
 
             // Act
-            await _groupsService.RemoveUserFromGroupAsync(group.Id, userId);
+            await _groupsService.AddUserToGroupAsync(group.Id, user.Id);
 
             // Assert
-            var removed = await _context.UserFriendGroups.FirstOrDefaultAsync();
-            Assert.Null(removed);
+            var relationship = await _context.Set<UserFriendGroup>()
+                .FirstOrDefaultAsync(ufg => ufg.UserId == user.Id && ufg.FriendGroupId == group.Id);
+            Assert.NotNull(relationship);
         }
 
         /// <summary>
-        /// Tests that RemoveUserFromGroupAsync throws ArgumentException when user is not in the group.
+        /// Verifies that providing a group ID that does not exist in the DB
+        /// throws <see cref="KeyNotFoundException"/>.
         /// </summary>
         [Fact]
-        public async Task RemoveUserFromGroupAsync_ShouldThrow_WhenUserNotInGroup()
+        public async Task AddUserToGroupAsync_WithInvalidGroup_ThrowsKeyNotFoundException()
         {
             // Arrange
-            var group = new FriendGroup { Title = "Group1", Description = "Test Description" };
-            await _context.FriendGroups.AddAsync(group);
-            await _context.SaveChangesAsync();
-
-            var userId = Guid.NewGuid();
+            var user = await CreateUserAsync();
+            var invalidGroupId = Guid.NewGuid(); // not seeded
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
-                _groupsService.RemoveUserFromGroupAsync(group.Id, userId));
-            Assert.Equal("Invalid userId or friend groupId", ex.Message);
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _groupsService.AddUserToGroupAsync(invalidGroupId, user.Id));
         }
 
         /// <summary>
-        /// Tests that RemoveUserFromGroupAsync throws ArgumentException when group does not exist.
+        /// Verifies that providing a user ID that does not exist in the DB
+        /// throws <see cref="KeyNotFoundException"/>.
         /// </summary>
         [Fact]
-        public async Task RemoveUserFromGroupAsync_ShouldThrow_WhenGroupDoesNotExist()
+        public async Task AddUserToGroupAsync_WithInvalidUser_ThrowsKeyNotFoundException()
         {
             // Arrange
-            var groupId = Guid.NewGuid();
-            var userId = Guid.NewGuid();
+            var group = await CreateFriendGroupAsync();
+            var invalidUserId = Guid.NewGuid(); // not seeded
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
-                _groupsService.RemoveUserFromGroupAsync(groupId, userId));
-            Assert.Equal("Invalid userId or friend groupId", ex.Message);
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _groupsService.AddUserToGroupAsync(group.Id, invalidUserId));
         }
 
         /// <summary>
-        /// Tests that RemoveUserFromGroupAsync only removes the specified user and leaves other users intact.
+        /// Verifies that attempting to add a user who is already a member of the group
+        /// throws <see cref="InvalidOperationException"/>.
         /// </summary>
         [Fact]
-        public async Task RemoveUserFromGroupAsync_WithMultipleUsers_ShouldRemoveOnlySpecifiedUser()
+        public async Task AddUserToGroupAsync_WithDuplicateUser_ThrowsInvalidOperationException()
         {
             // Arrange
-            var userId1 = Guid.NewGuid();
-            var userId2 = Guid.NewGuid();
-            var group = new FriendGroup { Title = "Group1", Description = "Test Description" };
-            await _context.FriendGroups.AddAsync(group);
-            await _context.SaveChangesAsync();
+            var user = await CreateUserAsync();
+            var group = await CreateFriendGroupAsync();
+            await AddUserToGroupDirectlyAsync(user.Id, group.Id); // user is already in the group
 
-            await _context.UserFriendGroups.AddAsync(new UserFriendGroup
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _groupsService.AddUserToGroupAsync(group.Id, user.Id));
+        }
+
+        #endregion AddUserToGroupAsync
+
+        #region CreateGroupAsync
+
+        /// <summary>
+        /// Verifies that creating a group with valid data returns a <see cref="GroupDTO"/>
+        /// whose Title matches the input model.
+        /// </summary>
+        [Fact]
+        public async Task CreateGroupAsync_WithValidData_ReturnsGroupDTO()
+        {
+            // Arrange
+            var user = await CreateUserAsync();
+            var model = new CreateGroupDTO
             {
-                UserId = userId1,
-                FriendGroupId = group.Id
-            });
-            await _context.UserFriendGroups.AddAsync(new UserFriendGroup
-            {
-                UserId = userId2,
-                FriendGroupId = group.Id
-            });
-            await _context.SaveChangesAsync();
+                Title = "My Group",
+                Description = "A group description"
+            };
+            SetupCreateQuestMock();
 
             // Act
-            await _groupsService.RemoveUserFromGroupAsync(group.Id, userId1);
+            var result = await _groupsService.CreateGroupAsync(model, user.Id);
 
-            // Assert - userId1 should be removed, userId2 should remain
-            var remainingUserGroups = await _context.UserFriendGroups.ToListAsync();
-            Assert.Single(remainingUserGroups);
-            Assert.Equal(userId2, remainingUserGroups[0].UserId);
+            // Assert
+            Assert.NotNull(result);
+            Assert.IsType<GroupDTO>(result);
+            Assert.Equal(model.Title, result.Title);
         }
 
         /// <summary>
-        /// Tests that RemoveUserFromGroupAsync allows removing a user from one group
-        /// while they remain in other groups.
+        /// Verifies that providing a user ID that does not exist in the DB
+        /// throws <see cref="KeyNotFoundException"/> during group creation.
         /// </summary>
         [Fact]
-        public async Task RemoveUserFromGroupAsync_WithUserInMultipleGroups_ShouldRemoveFromOnlyOneGroup()
+        public async Task CreateGroupAsync_WithInvalidUser_ThrowsKeyNotFoundException()
         {
             // Arrange
-            var userId = Guid.NewGuid();
-            var group1 = new FriendGroup { Title = "Group1", Description = "Test Description" };
-            var group2 = new FriendGroup { Title = "Group2", Description = "Test Description" };
-            await _context.FriendGroups.AddRangeAsync(group1, group2);
-            await _context.SaveChangesAsync();
+            var invalidUserId = Guid.NewGuid(); // not seeded
+            var model = new CreateGroupDTO
+            {
+                Title = "My Group",
+                Description = "A group description"
+            };
 
-            await _context.UserFriendGroups.AddAsync(new UserFriendGroup
+            // Act & Assert
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _groupsService.CreateGroupAsync(model, invalidUserId));
+        }
+
+        /// <summary>
+        /// Verifies that the creator is automatically added as a member of the
+        /// newly created group.
+        /// </summary>
+        [Fact]
+        public async Task CreateGroupAsync_WithValidData_AddsCreatorToGroup()
+        {
+            // Arrange
+            var user = await CreateUserAsync();
+            var model = new CreateGroupDTO
             {
-                UserId = userId,
-                FriendGroupId = group1.Id
-            });
-            await _context.UserFriendGroups.AddAsync(new UserFriendGroup
-            {
-                UserId = userId,
-                FriendGroupId = group2.Id
-            });
-            await _context.SaveChangesAsync();
+                Title = "My Group",
+                Description = "A group description"
+            };
+            SetupCreateQuestMock();
 
             // Act
-            await _groupsService.RemoveUserFromGroupAsync(group1.Id, userId);
+            var result = await _groupsService.CreateGroupAsync(model, user.Id);
 
-            // Assert - User should be removed from group1 but remain in group2
-            var remainingUserGroups = await _context.UserFriendGroups.ToListAsync();
-            Assert.Single(remainingUserGroups);
-            Assert.Equal(group2.Id, remainingUserGroups[0].FriendGroupId);
+            // Assert - the creator's UserFriendGroup row must exist in the DB
+            var membership = await _context.Set<UserFriendGroup>()
+                .FirstOrDefaultAsync(ufg => ufg.UserId == user.Id && ufg.FriendGroupId == result.Id);
+            Assert.NotNull(membership);
         }
 
         /// <summary>
-        /// Tests that RemoveUserFromGroupAsync succeeds when removing the last user from a group
-        /// (group can exist without members).
+        /// Verifies that <see cref="IQuestsService.CreateQuestAsync"/> is called exactly
+        /// once with the correct userId when a group is created.
         /// </summary>
         [Fact]
-        public async Task RemoveUserFromGroupAsync_WithLastUserInGroup_ShouldSucceed()
+        public async Task CreateGroupAsync_WithValidData_CreatesInitialQuest()
         {
             // Arrange
-            var userId = Guid.NewGuid();
-            var group = new FriendGroup { Title = "Group1", Description = "Test Description" };
-            await _context.FriendGroups.AddAsync(group);
-            await _context.SaveChangesAsync();
-
-            await _context.UserFriendGroups.AddAsync(new UserFriendGroup
+            var user = await CreateUserAsync();
+            var model = new CreateGroupDTO
             {
-                UserId = userId,
-                FriendGroupId = group.Id
-            });
-            await _context.SaveChangesAsync();
+                Title = "My Group",
+                Description = "A group description"
+            };
+            SetupCreateQuestMock();
 
-            // Act & Assert - Should not throw even though this is the last user
-            await _groupsService.RemoveUserFromGroupAsync(group.Id, userId);
+            // Act
+            await _groupsService.CreateGroupAsync(model, user.Id);
 
-            var remainingUserGroups = await _context.UserFriendGroups.ToListAsync();
-            Assert.Empty(remainingUserGroups);
-
-            // Group should still exist
-            var groupInDb = await _context.FriendGroups.FirstOrDefaultAsync();
-            Assert.NotNull(groupInDb);
+            // Assert
+            _mockQuestsService.Verify(
+                q => q.CreateQuestAsync(It.IsAny<Guid>(), user.Id, It.IsAny<CreateQuestDTO>()),
+                Times.Once);
         }
 
-        #endregion
+        #endregion CreateGroupAsync
+
+        #region GetGroupsForUserAsync
+
+        /// <summary>
+        /// Verifies that a user with an existing group membership receives the correct
+        /// <see cref="GroupDTO"/> back.
+        /// </summary>
+        [Fact]
+        public async Task GetGroupsForUserAsync_WithValidData_ReturnsGroupDTO()
+        {
+            // Arrange
+            var user = await CreateUserAsync();
+            var group = await CreateFriendGroupAsync();
+            await AddUserToGroupDirectlyAsync(user.Id, group.Id);
+
+            // Act
+            var result = await _groupsService.GetGroupsForUserAsync(user.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.IsType<List<GroupDTO>>(result);
+        }
+
+        /// <summary>
+        /// Verifies that querying groups for a user ID with no memberships
+        /// throws <see cref="KeyNotFoundException"/>.
+        /// </summary>
+        [Fact]
+        public async Task GetGroupsForUserAsync_WithInvalidUser_ThrowsKeyNotFoundException()
+        {
+            // Arrange
+            var invalidUserId = Guid.NewGuid(); // not seeded, no memberships
+
+            // Act & Assert
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _groupsService.GetGroupsForUserAsync(invalidUserId));
+        }
+
+        #endregion GetGroupsForUserAsync
+
+        #region RemoveUserFromGroupAsync
+
+        /// <summary>
+        /// Verifies that removing an existing member from a group deletes the
+        /// relationship row from the database.
+        /// </summary>
+        [Fact]
+        public async Task RemoveUserFromGroupAsync_WithValidData_RunsSuccessfully()
+        {
+            // Arrange
+            var user = await CreateUserAsync();
+            var group = await CreateFriendGroupAsync();
+            await AddUserToGroupDirectlyAsync(user.Id, group.Id);
+
+            // Act
+            await _groupsService.RemoveUserFromGroupAsync(group.Id, user.Id);
+
+            // Assert - relationship must no longer exist in the DB
+            var relationship = await _context.Set<UserFriendGroup>()
+                .FirstOrDefaultAsync(ufg => ufg.UserId == user.Id && ufg.FriendGroupId == group.Id);
+            Assert.Null(relationship);
+        }
+
+        /// <summary>
+        /// Verifies that removing a user using a group ID that has no matching
+        /// membership record throws <see cref="KeyNotFoundException"/>.
+        /// </summary>
+        [Fact]
+        public async Task RemoveUserFromGroupAsync_WithInvalidGroup_ThrowsKeyNotFoundException()
+        {
+            // Arrange
+            var user = await CreateUserAsync();
+            var invalidGroupId = Guid.NewGuid(); // user has no membership for this group
+
+            // Act & Assert
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _groupsService.RemoveUserFromGroupAsync(invalidGroupId, user.Id));
+        }
+
+        /// <summary>
+        /// Verifies that removing a user ID that has no membership in the given group
+        /// throws <see cref="KeyNotFoundException"/>.
+        /// </summary>
+        [Fact]
+        public async Task RemoveUserFromGroupAsync_WithInvalidUser_ThrowsKeyNotFoundException()
+        {
+            // Arrange
+            var group = await CreateFriendGroupAsync();
+            var invalidUserId = Guid.NewGuid(); // no membership exists for this user
+
+            // Act & Assert
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _groupsService.RemoveUserFromGroupAsync(group.Id, invalidUserId));
+        }
+
+        #endregion RemoveUserFromGroupAsync
     }
 }

@@ -37,6 +37,6 @@ namespace QuestGiver.Services.Groups
         /// </summary>
         /// <param name="userId">The id of the authenticated user.</param>
         /// <returns>A list of friend groups.</returns>
-        Task<GroupDTO> GetGroupsForUserAsync(Guid userId);
+        Task<List<GroupDTO>> GetGroupsForUserAsync(Guid userId);
     }
 }

@@ -32,6 +32,15 @@ namespace QuestGiver.Services.Groups
         /// <inheritdoc />
         public async Task AddUserToGroupAsync(Guid groupId, Guid userId)
         {
+            if(await _repo.AllReadonly<User>().FirstOrDefaultAsync(u => u.Id == userId) == null)
+                throw new KeyNotFoundException("Invalid userId");
+
+            if(await _repo.AllReadonly<FriendGroup>().FirstOrDefaultAsync(g => g.Id == groupId) == null)
+                throw new KeyNotFoundException("Invalid groupId");
+
+            if (await _repo.AllReadonly<UserFriendGroup>().AnyAsync(ufg => ufg.UserId == userId && ufg.FriendGroupId == groupId))
+                throw new InvalidOperationException("User is already in the group.");
+
             UserFriendGroup userFriendGroup = new UserFriendGroup
             {
                 FriendGroupId = groupId,
@@ -45,10 +54,20 @@ namespace QuestGiver.Services.Groups
         /// <inheritdoc />
         public async Task<GroupDTO> CreateGroupAsync(CreateGroupDTO model, Guid userId)
         {
+            if (await _repo.AllReadonly<User>().FirstOrDefaultAsync(u => u.Id == userId) == null)
+                throw new KeyNotFoundException("Invalid userId");
+
             FriendGroup group = _mapper.Map<FriendGroup>(model);
 
-            await _repo.AddAsync<FriendGroup>(group);
-            await AddUserToGroupAsync(group.Id, userId); // Add the creator to the group
+            group.UserFriendGroups = new List<UserFriendGroup>
+            {
+                new UserFriendGroup
+                {
+                    UserId = userId
+                }
+            };
+
+            await _repo.AddAsync(group); // Add the creator to the group
 
             // assign the initial quest to the group (add friends quest)
             await _questsService.CreateQuestAsync(group.Id, userId, 
@@ -60,16 +79,16 @@ namespace QuestGiver.Services.Groups
         }
 
         /// <inheritdoc/>
-        public async Task<GroupDTO> GetGroupsForUserAsync(Guid userId)
+        public async Task<List<GroupDTO>> GetGroupsForUserAsync(Guid userId)
         {
-            FriendGroup? group = await _repo.All<FriendGroup>().
+            List<FriendGroup> group = await _repo.All<FriendGroup>().
                 Include(g => g.UserFriendGroups).
-                FirstOrDefaultAsync(g => g.UserFriendGroups.Any(ufg => ufg.UserId == userId));
+                Where(g => g.UserFriendGroups.Any(ufg => ufg.UserId == userId)).ToListAsync(); ;
 
-            if(group == null)
-                throw new ArgumentException("Invalid userId or no groups found for the user.");
+            if(group.Count == 0)
+                throw new KeyNotFoundException("Invalid userId or no groups found for the user.");
 
-            return _mapper.Map<GroupDTO>(group);
+            return _mapper.Map<List<GroupDTO>>(group);
         }
 
         /// <inheritdoc />
@@ -79,9 +98,9 @@ namespace QuestGiver.Services.Groups
                 FirstOrDefaultAsync(x => x.UserId == userId && x.FriendGroupId == groupId);
 
             if (relationship == null)
-                throw new ArgumentException("Invalid userId or friend groupId");
+                throw new KeyNotFoundException("Invalid userId or friend groupId");
 
-            await _repo.DeleteAsync<UserFriendGroup>(relationship);
+            _repo.Delete<UserFriendGroup>(relationship);
             await _repo.SaveChangesAsync();
         }
     }
