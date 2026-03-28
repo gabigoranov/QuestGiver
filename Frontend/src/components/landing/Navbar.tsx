@@ -1,33 +1,24 @@
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '../common/ThemeToggle';
+    import AppLogo from "../common/AppLogo";
+    import { Button } from "../ui/button";
 
-export function Navbar() {
-  return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="flex items-center space-x-2">
-          <span className="text-2xl font-bold bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
-            QuestGiver
-          </span>
-        </Link>
-        
-        <nav className="hidden md:flex items-center gap-6">
-          <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Home
-          </Link>
-        </nav>
 
-        <div className="flex items-center gap-4">
-          <ThemeToggle />
-          <Button variant="outline" size="sm" className="hidden sm:flex">
+    /**
+     * Navigation bar for the landing page
+     *
+     * @export
+     * @return a container that holds the logo and a sign in button 
+     */
+    export default function Navbar() {
+    return (
+        <div
+        id="navbar"
+        className="bg-surface flex items-center justify-between px-8 py-4 border-border border-b z-999"
+        >
+        <AppLogo />
+
+        <Button value="primary" className="text-lg text-secondary font-semibold">
             Sign In
-          </Button>
-          <Button size="sm" className="hidden sm:flex">
-            Get Started
-          </Button>
+        </Button>
         </div>
-      </div>
-    </header>
-  );
-}
+    );
+    }
