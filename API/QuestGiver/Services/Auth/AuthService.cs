@@ -57,7 +57,7 @@ namespace QuestGiver.Services.Users
         public async Task<AuthResponse> RefreshLogin(string refreshToken)
         {
             Token token = await _tokensService.RefreshTokenAsync(refreshToken);
-            User user = token.User;
+            User user = await _repo.GetByIdAsync<User>(token.UserId);
 
             return new AuthResponse(_mapper.Map<UserDTO>(user), _mapper.Map<TokenDTO>(token));
         }

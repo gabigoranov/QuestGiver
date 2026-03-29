@@ -10,7 +10,7 @@ import { Card    } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 /**
  * Zod schema for sign-in form validation
@@ -29,6 +29,7 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -43,6 +44,7 @@ export default function SignIn() {
     try {
       await login(data.email, data.password);
       console.log("Login successful");
+      navigate("/home"); // Redirect to home after success
     } catch (err) {
       console.error("Login failed:", err);
     } finally {

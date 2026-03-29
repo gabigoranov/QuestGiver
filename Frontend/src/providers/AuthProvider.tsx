@@ -2,72 +2,77 @@ import { AuthContext } from "@/context/AuthContext";
 import { AuthService } from "@/services/authService";
 import type { TokenDTO } from "@/types/Receive/TokenDTO";
 import type { UserDTO } from "@/types/Receive/UserDTO";
+import type { CreateUserDTO } from "@/types/Send/CreateUserDTO";
 import { useEffect, useState } from "react";
 
-
-/**
- * Provides functions for authenticating the user
- *
- * @export
- * @param {{
- *   children: React.ReactNode;
- * }} {
- *   children,
- * }
- * @return {*} 
- */
-export default function AuthProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserDTO | null>(null);
   const [token, setToken] = useState<TokenDTO | null>(null);
+  const [loading, setLoading] = useState(true); // tracks initial auth restore
+
+  const saveData = (user: UserDTO, token: TokenDTO) => {
+    setUser(user);
+    setToken(token);
+    localStorage.setItem("refreshToken", token.refreshToken);
+    localStorage.setItem("accessToken", token.accessToken);
+  };
 
   const login = async (email: string, password: string) => {
     const res = await AuthService.login(email, password);
-
-    setUser(res.user);
-    setToken(res.token);
-
-    // Save to local storage in case of a page refresh
-    localStorage.setItem("refreshToken", token!.refreshToken);
-    localStorage.setItem("accessToken", token!.accessToken);
-
-    console.log(res);
-
-    // TODO: Navigate to home page
+    saveData(res.user, res.token);
   };
 
   const logout = () => {
-    // Clear everything
-
     setUser(null);
     setToken(null);
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("accessToken");
   };
 
-  // On app load, try to restore user from local storage (if refresh token exists)
-  useEffect(() => {
-    // runs once when AuthProvider mounts
-    const token = localStorage.getItem("refreshToken");
-    if (token) {
-      // call API to restore user
-      AuthService.refresh(token)
-        .then((res) => {
-            setUser(res.user);
-            setToken(res.token);
-        })
-        .catch(() => {
-          // token invalid, logout
-          logout();
-        });
+  const signUp = async (data: CreateUserDTO) => {
+    const res = await AuthService.signup(data);
+    saveData(res.user, res.token);
+  };
+
+  const refresh = async () => {
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (!refreshToken) {
+      logout();
+      return;
     }
-  }, []); // <- empty array = run once
+
+    try {
+      const res = await AuthService.refresh(refreshToken);
+      saveData(res.user, res.token);
+    } catch {
+      logout();
+    }
+  };
+
+  // Restore user from localStorage on mount
+  useEffect(() => {
+    const initAuth = async () => {
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (!refreshToken) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await AuthService.refresh(refreshToken);
+        saveData(res.user, res.token);
+      } catch {
+        logout();
+      } finally {
+        setLoading(false); // Done restoring
+      }
+    };
+
+    initAuth();
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, signUp, refresh, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

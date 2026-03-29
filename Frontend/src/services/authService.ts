@@ -16,18 +16,10 @@ export const AuthService = {
   },
   // Used to refresh the auth ( JWT ) token when it expires
   refresh: async (refreshToken: string): Promise<AuthResponse> => {
-    const res = await api.post(`${BASE_URL}/refresh`, refreshToken, {
-      headers: {
-        "Content-Type": "text/plain", // explicitly tell Axios this is raw text
-      },
-    });
+    const res = await api.post(`${BASE_URL}/refresh`, {refreshToken});
     return res.data;
   },
   logout: async (refreshToken: string): Promise<void> => {
-    await api.post(`${BASE_URL}/logout`, refreshToken, {
-      headers: {
-        "Content-Type": "text/plain", // explicitly tell Axios this is raw text
-      },
-    });
+    await api.post(`${BASE_URL}/logout`, {refreshToken});
   },
 };
