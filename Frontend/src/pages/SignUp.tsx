@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 /**
  * Zod schema for sign-up form validation
@@ -34,6 +34,7 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signUp: authRegister } = useAuth();
+  const navigate = useNavigate();
 
   // React Hook Form with Zod validation
   const {
@@ -58,7 +59,7 @@ export default function SignUp() {
         password: data.password,
       });
       console.log("Sign up successful");
-      // TODO: redirect to login or dashboard
+      navigate("/home"); // Redirect to home after success
     } catch (err) {
       console.error("Sign up failed:", err);
       // TODO: show notification
