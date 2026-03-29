@@ -22,5 +22,12 @@ namespace QuestGiver.Services.Users
         /// <returns>A task that represents the asynchronous operation. The task result contains an AuthResponse indicating
         /// whether authentication was successful and any related information.</returns>
         public Task<AuthResponse> VerifyLoginAsync(LoginDTO model);
+
+        /// <summary>
+        /// Refreshes the user's session using their refreshToken
+        /// </summary>
+        /// <param name="refreshToken">The refresh token</param>
+        /// <returns>An auth response with user data and the new token data</returns>
+        public Task<AuthResponse> RefreshLogin(string refreshToken);
     }
 }

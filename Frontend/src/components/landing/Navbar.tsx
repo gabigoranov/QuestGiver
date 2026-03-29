@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import AppLogo from "../common/AppLogo";
 import { Button } from "../ui/button";
-
+import { Link } from "react-router-dom";
 
 /**
  * Navigation bar for the landing page
@@ -14,14 +14,19 @@ export default function Navbar() {
 
   return (
     <div
-    id="navbar"
-    className="bg-surface flex items-center justify-between px-8 py-4 border-border border-b z-999"
+      id="navbar"
+      className="bg-surface flex items-center justify-between px-8 py-4 border-border border-b z-999"
     >
-    <AppLogo />
+      <AppLogo />
 
-    <Button value="primary" className="text-lg text-secondary font-semibold">
-        {t("navigation.signIn")}
-    </Button>
+      <Link to="/signin">
+        <Button
+          value="primary"
+          className="text-lg text-secondary font-semibold"
+        >
+          {t("navigation.signIn")}
+        </Button>
+      </Link>
     </div>
   );
 }

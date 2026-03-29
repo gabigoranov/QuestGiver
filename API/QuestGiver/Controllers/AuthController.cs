@@ -63,31 +63,31 @@ namespace QuestGiver.Controllers
         /// <summary>
         /// Supplies a new access and refresh token if the supplied one is not expired.
         /// </summary>
-        /// <param name="refreshToken">The refresh token supplied by the frontend.</param>
+        /// <param name="request">The refresh token supplied by the frontend.</param>
         /// <returns>A new TokenDTO.</returns>
         [HttpPost("refresh")]
-        public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            TokenDTO refreshed = await _tokensService.RefreshTokenAsync(refreshToken);
+            AuthResponse refreshed = await _authService.RefreshLogin(request.RefreshToken);
             return Ok(refreshed);
         }
 
         /// <summary>
         /// Invalidates ( Deletes ) a token or does nothing if the refreshToken is invalid.
         /// </summary>
-        /// <param name="refreshToken">The refresh token.</param>
+        /// <param name="request">The refresh token.</param>
         /// <returns>Nothing.</returns>
         [Authorize]
         [HttpPost("logout")]
-        public async Task<IActionResult> InvalidateRefreshToken([FromBody] string refreshToken)
+        public async Task<IActionResult> InvalidateRefreshToken([FromBody] RefreshTokenRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            await _tokensService.InvalidateTokenAsync(refreshToken);
+            await _tokensService.InvalidateTokenAsync(request.RefreshToken);
             return Ok();
         }
     }

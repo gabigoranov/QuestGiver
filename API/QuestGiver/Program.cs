@@ -94,24 +94,37 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityRequirement(securityReq);
 });
 
+
+var prodOrigin = "https://questbound.vercel.app";
+
 builder.Services.AddCors(options =>
 {
-    // Temporarily allow all origins, headers, and methods for development purposes.
     options.AddPolicy("FrontendPolicy", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        if (builder.Environment.IsDevelopment())
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        }
+        else
+        {
+            policy.WithOrigins(prodOrigin)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        }
     });
 });
 
 var app = builder.Build();
 
+app.UseCors("FrontendPolicy");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (true) // IN DEVELOPMENT, I WANT TO SEE SWAGGER WHEN I OPEN WEBSITE
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -125,8 +138,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.UseCors("FrontendPolicy");
 
 app.UseAuthorization();
 

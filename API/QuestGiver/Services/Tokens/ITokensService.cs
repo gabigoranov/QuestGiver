@@ -34,7 +34,7 @@ namespace QuestGiver.Services.Tokens
         /// </summary>
         /// <param name="refreshToken">The refresh token supplied by the frontend.</param>
         /// <returns>The refreshed token.</returns>
-        public Task<TokenDTO> RefreshTokenAsync(string refreshToken);
+        public Task<Token> RefreshTokenAsync(string refreshToken);
 
         /// <summary>
         /// Invalidates ( Deletes ) the supplied refresh token.
