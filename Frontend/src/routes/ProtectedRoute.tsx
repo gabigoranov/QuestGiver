@@ -6,5 +6,5 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
   if (loading) return null; // small skeleton or nothing
 
-  return user ? <>{children}</> : <Navigate to="/" />;
+  return user ? <>{children}</> : <Navigate to="/signin" />;
 }

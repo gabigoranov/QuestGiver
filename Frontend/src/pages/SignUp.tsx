@@ -21,7 +21,7 @@ const signUpSchema = z.object({
   birthDate: z.string().refine(val => !isNaN(Date.parse(val)), { message: "Invalid date" }),
   description: z.string().max(200, { message: "Description must be 200 characters or less" }).optional(),
   email: z.string().email({ message: "Invalid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
 });
 
 /**
