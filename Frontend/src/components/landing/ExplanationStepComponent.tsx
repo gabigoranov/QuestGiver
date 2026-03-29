@@ -1,8 +1,10 @@
+import { useTranslation } from "react-i18next";
+
 type ExplanationStepComponentProps = {
   colorVariant?: "primary" | "secondary" | "tertiary";
   icon: React.ReactNode;
-  headingText: string;
-  descriptionText: string;
+  headingText?: string;
+  descriptionText?: string;
 };
 
 const colorVariants = {
@@ -33,10 +35,11 @@ const colorVariants = {
  */
 export default function ExplanationStepComponent({
   colorVariant = "primary",
-  headingText = "Step Heading",
-  descriptionText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod.",
+  headingText,
+  descriptionText,
   icon,
 }: ExplanationStepComponentProps) {
+  const { t } = useTranslation();
   const { bg, border, text } = colorVariants[colorVariant];
 
   return (
@@ -53,10 +56,10 @@ export default function ExplanationStepComponent({
       {/* Content */}
       <div className="flex flex-col items-start justify-start text-start w-4/6">
         <h3 className={`text-3xl font-bold text-text`}>
-          {headingText}
+          {headingText || t("explanation.steps.generation.heading")}
         </h3>
         <p className={`text-muted-foreground mt-2 text-text`}>
-          {descriptionText}
+          {descriptionText || t("explanation.steps.generation.description")}
         </p>
       </div>
     </div>

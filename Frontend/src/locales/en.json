@@ -12,6 +12,64 @@
   "navigation": {
     "home": "Home",
     "about": "About",
-    "contact": "Contact"
+    "contact": "Contact",
+    "signIn": "Sign In"
+  },
+  "hero": {
+    "title": "Turn Your City <br /> into an <span>Epic <br /> Playground</span>",
+    "description": "Discover hidden secrets and share unforgettable quests with your closest friends. Your neighbourhood is the game.",
+    "startJourney": "Start Your Journey",
+    "learnMore": "Learn More"
+  },
+  "explanation": {
+    "label": "The Gameplay Experience",
+    "title": "The Quest Cycle",
+    "steps": {
+      "generation": {
+        "heading": "AI Quest Generation",
+        "description": "AI crafts a unique quest based on your profile, city, history, and real-time location."
+      },
+      "evidence": {
+        "heading": "Upload Evidence",
+        "description": "Complete the objective and capture a moment of victory. Every proof adds to your legacy."
+      },
+      "vouch": {
+        "heading": "Community Vouch",
+        "description": "Your friends verify your feats, awarding XP and rare badges."
+      }
+    }
+  },
+  "faq": {
+    "title": "Common Questions",
+    "items": {
+      "questGeneration": {
+        "question": "How are quests generated?",
+        "answer": "Quests are generated using AI that analyzes your goals, preferences, and past activity. Each quest is uniquely tailored to push you just the right amount — challenging, but always achievable."
+      },
+      "skipQuest": {
+        "question": "Can I skip a quest?",
+        "answer": "Yes! You can skip a quest once per day without any penalty. Skipping more than once will cost you a small number of points, so choose wisely and save your skips for when you truly need them."
+      },
+      "earnPoints": {
+        "question": "How do I earn points?",
+        "answer": "Points are earned by completing quests, maintaining daily streaks, and hitting milestone goals. Bonus points are awarded for completing quests early or achieving them with extra precision."
+      }
+    }
+  },
+  "cta": {
+    "title": "Ready to Level Up?",
+    "description": "Join thousands of friends already transforming their daily routines.",
+    "button": "Start Your Journey"
+  },
+  "footer": {
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "support": "Support",
+    "copyright": "© 2026 QuestBound. Forge your destiny.",
+    "languageToggle": {
+      "en": "EN",
+      "bg": "BG",
+      "ariaLabel": "Select language"
+    }
   }
 }

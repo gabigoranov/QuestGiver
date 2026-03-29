@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
@@ -5,24 +6,6 @@ interface FAQItem {
   question: string;
   answer: string;
 }
-
-const faqs: FAQItem[] = [
-  {
-    question: "How are quests generated?",
-    answer:
-      "Quests are generated using AI that analyzes your goals, preferences, and past activity. Each quest is uniquely tailored to push you just the right amount — challenging, but always achievable.",
-  },
-  {
-    question: "Can I skip a quest?",
-    answer:
-      "Yes! You can skip a quest once per day without any penalty. Skipping more than once will cost you a small number of points, so choose wisely and save your skips for when you truly need them.",
-  },
-  {
-    question: "How do I earn points?",
-    answer:
-      "Points are earned by completing quests, maintaining daily streaks, and hitting milestone goals. Bonus points are awarded for completing quests early or achieving them with extra precision.",
-  },
-];
 
 
 /**
@@ -38,7 +21,7 @@ const faqs: FAQItem[] = [
  *   isOpen,
  *   onToggle,
  * }
- * @return {*} 
+ * @return {*}
  */
 function AccordionItem({
   item,
@@ -144,12 +127,28 @@ function AccordionItem({
  * Part of the landing page
  *
  * @export
- * @return {*} 
+ * @return {*}
  */
 export default function CommonQuestions() {
+  const { t } = useTranslation();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggle = (i: number) => setOpenIndex(openIndex === i ? null : i);
+
+  const faqs: FAQItem[] = [
+    {
+      question: t("faq.items.questGeneration.question"),
+      answer: t("faq.items.questGeneration.answer"),
+    },
+    {
+      question: t("faq.items.skipQuest.question"),
+      answer: t("faq.items.skipQuest.answer"),
+    },
+    {
+      question: t("faq.items.earnPoints.question"),
+      answer: t("faq.items.earnPoints.answer"),
+    },
+  ];
 
   return (
     // bg-background resolves to --surface (#121212) via @theme inline
@@ -159,7 +158,7 @@ export default function CommonQuestions() {
         {/* ── Section Heading ── */}
         {/* text-foreground → --on-surface via @theme */}
         <h2 className="mb-7 text-center font-heading text-[1.75rem] font-bold tracking-tight text-foreground">
-          Common Questions
+          {t("faq.title")}
         </h2>
 
         {/* ── FAQ Accordion List ── */}

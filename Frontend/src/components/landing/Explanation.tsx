@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { LucideCamera, LucideSparkles, LucideUsersRound } from "lucide-react";
 import ExplanationStepComponent from "./ExplanationStepComponent";
 
@@ -8,6 +9,8 @@ import ExplanationStepComponent from "./ExplanationStepComponent";
  * @return A container holding the different steps of the quest cycle and a heading
  */
 export default function Explanation() {
+  const { t } = useTranslation();
+
   return (
     <section id="how-it-works" className="relative w-full h-auto">
       {/* Grid background */}
@@ -18,9 +21,9 @@ export default function Explanation() {
         {/* Headings */}
         <div className="flex flex-col gap-4">
           <h4 className="uppercase text-sans text-primary font-semibold tracking-[0.3rem] text-sm">
-            The Gameplay Experience
+            {t("explanation.label")}
           </h4>
-          <h2 className="text-4xl font-heading font-bold">The Quest Cycle</h2>
+          <h2 className="text-4xl font-heading font-bold">{t("explanation.title")}</h2>
         </div>
 
         {/* Explanation Steps */}
@@ -30,22 +33,22 @@ export default function Explanation() {
 
           <ExplanationStepComponent
             colorVariant="primary"
-            headingText="AI Quest Generation"
-            descriptionText="AI crafts a unique quest based on your profile, city, history, and real-time location."
+            headingText={t("explanation.steps.generation.heading")}
+            descriptionText={t("explanation.steps.generation.description")}
             icon={<LucideSparkles size={40} />}
           />
 
           <ExplanationStepComponent
             colorVariant="tertiary"
-            headingText="Upload Evidence"
-            descriptionText="Complete the objective and capture a moment of victory. Every proof adds to your legacy."
+            headingText={t("explanation.steps.evidence.heading")}
+            descriptionText={t("explanation.steps.evidence.description")}
             icon={<LucideCamera size={40} />}
           />
 
           <ExplanationStepComponent
             colorVariant="primary"
-            headingText="Community Vouch"
-            descriptionText="Your friends verify your feats, awarding XP and rare badges."
+            headingText={t("explanation.steps.vouch.heading")}
+            descriptionText={t("explanation.steps.vouch.description")}
             icon={<LucideUsersRound size={40} />}
           />
         </div>
