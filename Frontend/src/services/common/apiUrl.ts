@@ -1,1 +1,1 @@
-export const API_URL = "https://localhost:7079/api"; //"https://questbound.runasp.net/api"; 
+export const API_URL = "https://questbound.runasp.net/api"; //"https://localhost:7079/api"; 
