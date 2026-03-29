@@ -53,6 +53,15 @@ namespace QuestGiver.Services.Users
             return new AuthResponse(userMap, token);
         }
 
+        /// <inheritdoc/>
+        public async Task<AuthResponse> RefreshLogin(string refreshToken)
+        {
+            Token token = await _tokensService.RefreshTokenAsync(refreshToken);
+            User user = token.User;
+
+            return new AuthResponse(_mapper.Map<UserDTO>(user), _mapper.Map<TokenDTO>(token));
+        }
+
         /// <inheritdoc />
         public async Task<AuthResponse> VerifyLoginAsync(LoginDTO model)
         {

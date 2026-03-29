@@ -55,7 +55,10 @@ export default function AuthProvider({
     if (token) {
       // call API to restore user
       AuthService.refresh(token)
-        .then(setToken)
+        .then((res) => {
+            setUser(res.user);
+            setToken(res.token);
+        })
         .catch(() => {
           // token invalid, logout
           logout();

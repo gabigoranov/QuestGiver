@@ -71,7 +71,7 @@ namespace QuestGiver.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            TokenDTO refreshed = await _tokensService.RefreshTokenAsync(refreshToken);
+            AuthResponse refreshed = await _authService.RefreshLogin(refreshToken);
             return Ok(refreshed);
         }
 

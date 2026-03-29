@@ -131,7 +131,7 @@ namespace QuestGiver.Services.Tokens
         }
 
         /// <inheritdoc />
-        public async Task<TokenDTO> RefreshTokenAsync(string refreshToken)
+        public async Task<Token> RefreshTokenAsync(string refreshToken)
         {
             Token? token = await _repo.All<Token>().SingleOrDefaultAsync(x => x.RefreshToken == refreshToken);
 
@@ -168,7 +168,7 @@ namespace QuestGiver.Services.Tokens
             _repo.Update(token);
             await _repo.SaveChangesAsync();
 
-            return _mapper.Map<TokenDTO>(token);
+            return token;
         }
     }
 }

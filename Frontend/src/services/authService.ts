@@ -1,7 +1,6 @@
 import type { AuthResponse } from "@/types/Receive/AuthResponse";
 import type { CreateUserDTO } from "@/types/Send/CreateUserDTO";
 import { api } from "./api";
-import type { TokenDTO } from "@/types/Receive/TokenDTO";
 
 const BASE_URL = "/auth";
 
@@ -16,7 +15,7 @@ export const AuthService = {
     return res.data;
   },
   // Used to refresh the auth ( JWT ) token when it expires
-  refresh: async (refreshToken: string): Promise<TokenDTO> => {
+  refresh: async (refreshToken: string): Promise<AuthResponse> => {
     const res = await api.post(`${BASE_URL}/refresh`, refreshToken, {
       headers: {
         "Content-Type": "text/plain", // explicitly tell Axios this is raw text
