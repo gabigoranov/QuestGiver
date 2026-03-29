@@ -1,3 +1,7 @@
+import CommonQuestions from "@/components/landing/CommonQuestions";
+import CTA from "@/components/landing/CTA";
+import Explanation from "@/components/landing/Explanation";
+import Footer from "@/components/landing/Footer";
 import Hero from "@/components/landing/Hero";
 import Navbar from "@/components/landing/Navbar";
 
@@ -16,6 +20,18 @@ export function LandingPage() {
 
       {/* Hero Section */}
       <Hero />
+
+      {/* Explanation Section */}
+      <Explanation />
+
+      {/* FAQ */}
+      <CommonQuestions />
+
+      {/* CTA */}
+      <CTA />
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
