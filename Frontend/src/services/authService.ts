@@ -11,7 +11,7 @@ export const AuthService = {
     return res.data;
   },
   signup: async (data: CreateUserDTO): Promise<AuthResponse> => {
-    const res = await api.post(`${BASE_URL}/signup`, data);
+    const res = await api.post(`${BASE_URL}`, data);
     return res.data;
   },
   // Used to refresh the auth ( JWT ) token when it expires
