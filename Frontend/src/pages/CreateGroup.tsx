@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { GroupsService } from "@/services/groupsService";
 
 /**
  * Zod schema for CreateGroup form validation
@@ -37,8 +38,9 @@ export default function CreateGroup() {
   const onSubmit = async (data: CreateGroupDTO) => {
     setLoading(true);
     try {
-      // TODO: Fill in submission logic
-      console.log("Group data submitted:", data);
+      await GroupsService.create(data);
+      console.log("Group created successfully");
+      navigate("/home"); // Redirect to home after success
     } catch (err) {
       console.error("Failed to create group:", err);
     } finally {
@@ -67,7 +69,7 @@ export default function CreateGroup() {
               placeholder="My Awesome Friends"
               {...register("title")}
             />
-            {errors.title && <p className="text-xs text-red-500">{errors.title.message}</p>}
+            {errors.title && <p className="text-xs text-error">{errors.title.message}</p>}
           </div>
 
           {/* Description Field */}
@@ -79,7 +81,7 @@ export default function CreateGroup() {
               rows={4}
             />
             {errors.description && (
-              <p className="text-xs text-red-500">{errors.description.message}</p>
+              <p className="text-xs text-error">{errors.description.message}</p>
             )}
           </div>
 

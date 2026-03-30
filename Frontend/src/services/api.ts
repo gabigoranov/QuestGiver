@@ -19,6 +19,13 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+api.interceptors.response.use((response) => {
+  if (response.data) {
+    response.data = deepTransform(response.data);
+  }
+  return response;
+});
+
 // TODO: This probably doesnt work lmao
 let isRefreshing = false;
 let refreshPromise: Promise<string> | null = null;
@@ -86,6 +93,10 @@ function deepTransform(obj: any): any {
     return obj.toISOString();
   }
 
+  if (typeof obj === "string" && isIsoDateString(obj)) {
+    return new Date(obj);
+  }
+
   if (Array.isArray(obj)) {
     return obj.map(deepTransform);
   }
@@ -97,4 +108,8 @@ function deepTransform(obj: any): any {
   }
 
   return obj;
+}
+
+function isIsoDateString(value: string) {
+  return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value);
 }

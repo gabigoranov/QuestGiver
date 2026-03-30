@@ -62,10 +62,10 @@ namespace QuestGiver.Controllers
         /// <summary>
         /// Adds a user to an existing friend group, creating a new entry in the UserFriendsGroup join table.
         /// </summary>
-        /// <param name="groupId">The id of the group.</param>
+        /// <param name="request">The id of the group.</param>
         /// <returns>Nothing.</returns>
         [HttpPost("join")]
-        public async Task<IActionResult> JoinGroup([FromBody] Guid groupId)
+        public async Task<IActionResult> JoinGroup([FromBody] GroupRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -73,7 +73,7 @@ namespace QuestGiver.Controllers
             // Load userId from JWT token
             Guid userId = User.GetUserId(); // We rely on the id from the claim for security
 
-            await _groupsService.AddUserToGroupAsync(groupId, userId);
+            await _groupsService.AddUserToGroupAsync(request.GroupId, userId);
 
             return Ok();
         }
@@ -81,10 +81,10 @@ namespace QuestGiver.Controllers
         /// <summary>
         /// Removes a user from a friend group by deleting the corresponding entry in the UserFriendsGroup join table.
         /// </summary>
-        /// <param name="groupId">The id of the group.</param>
+        /// <param name="request">The id of the group.</param>
         /// <returns>Nothing.</returns>
         [HttpPost("leave")]
-        public async Task<IActionResult> LeaveGroup([FromBody] Guid groupId)
+        public async Task<IActionResult> LeaveGroup([FromBody] GroupRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -92,7 +92,7 @@ namespace QuestGiver.Controllers
             // Load userId from JWT token
             Guid userId = User.GetUserId(); // We rely on the id from the claim for security
 
-            await _groupsService.RemoveUserFromGroupAsync(groupId, userId);
+            await _groupsService.RemoveUserFromGroupAsync(request.GroupId, userId);
 
             return Ok();
         }

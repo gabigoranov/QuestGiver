@@ -94,7 +94,7 @@ export default function SignUp() {
                 className="pl-10"
               />
             </div>
-            {errors.username && <p className="text-xs text-red-500">{errors.username.message}</p>}
+            {errors.username && <p className="text-xs text-error">{errors.username.message}</p>}
           </div>
 
           {/* Birth Date Field */}
@@ -108,7 +108,7 @@ export default function SignUp() {
                 className="pl-10"
               />
             </div>
-            {errors.birthDate && <p className="text-xs text-red-500">{errors.birthDate.message}</p>}
+            {errors.birthDate && <p className="text-xs text-error">{errors.birthDate.message}</p>}
           </div>
 
           {/* Description Field */}
@@ -119,7 +119,7 @@ export default function SignUp() {
               {...register("description")}
               rows={3}
             />
-            {errors.description && <p className="text-xs text-red-500">{errors.description.message}</p>}
+            {errors.description && <p className="text-xs text-error">{errors.description.message}</p>}
           </div>
 
           {/* Email Field */}
@@ -134,7 +134,7 @@ export default function SignUp() {
                 className="pl-10"
               />
             </div>
-            {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
+            {errors.email && <p className="text-xs text-error">{errors.email.message}</p>}
           </div>
 
           {/* Password Field */}
@@ -156,7 +156,7 @@ export default function SignUp() {
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </Button>
             </div>
-            {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
+            {errors.password && <p className="text-xs text-error">{errors.password.message}</p>}
           </div>
 
           {/* Submit Button */}

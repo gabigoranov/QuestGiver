@@ -78,7 +78,7 @@ export default function SignIn() {
                 className="pl-10"
               />
             </div>
-            {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
+            {errors.email && <p className="text-xs text-error">{errors.email.message}</p>}
           </div>
 
           {/* Password Field */}
@@ -105,7 +105,7 @@ export default function SignIn() {
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </Button>
             </div>
-            {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
+            {errors.password && <p className="text-xs text-error">{errors.password.message}</p>}
           </div>
 
           {/* Submit Button */}

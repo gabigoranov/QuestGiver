@@ -135,6 +135,14 @@
 
 /* Shadcn/ui overwrites */
 
+.page{
+  padding: 2rem 1rem;
+  background: linear-gradient(180deg, oklch(from var(--primary) l c h / 0.2) 0%, var(--background) 60%);
+  height: 100%;
+  overflow-y: scroll;
+  margin-bottom: 10rem;
+}
+
 @layer components {
   .card {
     background: var(--glass-bg);
