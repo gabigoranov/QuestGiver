@@ -22,7 +22,7 @@ export default function Navbar() {
       <Link to="/signin">
         <Button
           value="primary"
-          className="text-lg text-secondary font-semibold"
+          className="text-lg font-semibold"
         >
           {t("navigation.signIn")}
         </Button>

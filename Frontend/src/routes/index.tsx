@@ -6,6 +6,7 @@ import { createBrowserRouter } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import Layout from "@/components/common/Layout";
 import Profile from "@/pages/Profile";
+import CreateGroup from "@/pages/CreateGroup";
 
 // Define the routes for the application
 export const router = createBrowserRouter([
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
       {
         path: "/profile",
         element: <Profile />,
+      },
+      {
+        path: "/create",
+        element: <CreateGroup />,
       },
       // future pages:
     ],

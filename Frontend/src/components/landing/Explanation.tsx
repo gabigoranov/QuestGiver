@@ -14,7 +14,7 @@ export default function Explanation() {
   return (
     <section id="how-it-works" className="relative w-full h-auto">
       {/* Grid background */}
-      <div className="absolute inset-0 h-full w-full bg-muted bg-[linear-gradient(to_right,var(--border),transparent_1px),linear-gradient(to_bottom,var(--border),transparent_1px)] bg-size-[calc(100%/12)_calc(100%/12)]"></div>
+      <div className="absolute inset-0 h-full w-full bg-muted bg-[linear-gradient(to_right,var(--border),transparent_1px),linear-gradient(to_bottom,var(--border),transparent_1px)] bg-size-[calc(100vw/12)_calc(100vw/12)]"></div>
 
       {/* Content */}
       <div className="relative z-10 px-6 py-20 flex flex-col items-center text-center gap-12">
