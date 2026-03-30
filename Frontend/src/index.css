@@ -4,26 +4,22 @@
 @import "@fontsource-variable/manrope";
 
 @custom-variant dark (&:is(.dark *));
-
 @theme inline {
   --font-heading: "Space Grotesk Variable", sans-serif;
   --font-sans: "Manrope Variable", sans-serif;
 
-  /* === CORE === */
-  --color-background: var(--surface);
-  --color-foreground: var(--on-surface);
+  /* CORE */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
 
-  /* === SURFACE MAPPING (THIS IS THE IMPORTANT PART) === */
-  --color-card: var(--surface-container-high);
-  --color-card-foreground: var(--on-surface);
+  /* SURFACES */
+  --color-card: var(--card);
+  --color-card-foreground: var(--foreground);
 
-  --color-popover: var(--surface-container-highest);
-  --color-popover-foreground: var(--on-surface);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
 
-  --color-muted: var(--surface-container-low);
-  --color-muted-foreground: var(--on-surface-variant);
-
-  /* === PRIMARY SYSTEM === */
+  /* BRAND */
   --color-primary: var(--primary);
   --color-primary-foreground: var(--on-primary);
 
@@ -33,33 +29,16 @@
   --color-tertiary: var(--tertiary);
   --color-tertiary-foreground: var(--on-tertiary);
 
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--on-accent);
+  /* STATE */
+  --color-success: var(--success);
+  --color-success-foreground: var(--on-success);
 
-  --color-destructive: var(--destructive);
+  --color-error: var(--error);
+  --color-error-foreground: var(--on-error);
 
+  /* UI */
   --color-border: var(--border);
-  --color-input: var(--surface-container-high);
-
-  /* === INTERACTION === */
   --color-ring: var(--ring);
-
-  /* === CHARTS (keep glow harmony) === */
-  --color-chart-1: var(--accent);
-  --color-chart-2: var(--primary);
-  --color-chart-3: var(--tertiary);
-  --color-chart-4: var(--secondary);
-  --color-chart-5: var(--muted);
-
-  /* === SIDEBAR === */
-  --color-sidebar: var(--surface-container);
-  --color-sidebar-foreground: var(--on-surface);
-  --color-sidebar-primary: var(--primary);
-  --color-sidebar-primary-foreground: var(--on-primary);
-  --color-sidebar-accent: var(--surface-container-low);
-  --color-sidebar-accent-foreground: var(--on-surface);
-  --color-sidebar-border: transparent;
-  --color-sidebar-ring: var(--ring);
 
   /* === RADIUS === */
   --radius: 0.75rem;
@@ -78,89 +57,68 @@
 
 @layer base {
   :root {
-    /* === CORE BACKGROUND SYSTEM (The Void) === */
-    --surface: #121212;
-    --surface-foreground: oklch(0.95 0 0);
+    /* BACKGROUND */
+    --background: #121212;
+    --foreground: oklch(0.95 0 0);
 
-    /* === SURFACE LAYERS (Depth System) === */
-    --surface-container-lowest: oklch(0.08 0.02 310);
-    --surface-container-low: oklch(0.12 0.02 310);
-    --surface-container: oklch(0.15 0.03 310);
-    --surface-container-high: #2c2a28;
-    --surface-container-highest: #2c2a28;
+    /* SURFACES */
+    --card: #1e1c1a;
 
-    /* === TEXT === */
-    --on-surface: oklch(0.95 0 0);
-    --on-surface-variant: oklch(0.7 0 0);
+    /* MUTED */
+    --muted: #0e0e0e;
+    --muted-foreground: oklch(0.7 0 0);
 
-    /* === PRIMARY (Nebula) === */
+    /* BRAND */
     --primary: #d1c0ff;
-    --primary-container: #b89fff;
-    --on-primary: oklch(0.1 0.02 310);
+    --on-primary: #1a102e;
 
-    /* === SECONDARY (Deep contrast) === */
     --secondary: #1a0b2e;
     --on-secondary: oklch(0.95 0 0);
 
-    /* === ACCENT (Aurora glow) === */
-    --accent: oklch(0.75 0.2 330);
-    --on-accent: oklch(0.1 0.02 310);
+    --tertiary: oklch(0.93 0.1 95);
+    --on-tertiary: #1a102e;
 
-    /* === TERTIARY (Solar flare / rare actions) === */
-    --tertiary: oklch(0.9292 0.108 94.17);
-    --on-tertiary: oklch(0.1 0.02 310);
+    /* STATES */
+    --success: oklch(0.7 0.18 150);
+    --on-success: #052e16;
 
-    /* === MUTED === */
-    --muted: oklch(0.2 0.05 310);
-    --muted-foreground: oklch(0.7 0 0);
+    --error: oklch(0.65 0.25 25);
+    --on-error: #2b0b0b;
 
-    /* === STATE COLORS === */
-    --destructive: oklch(0.65 0.25 25);
-
-    /* === GLASS SYSTEM === */
-    --glass-bg: oklch(0.2 0.05 310 / 0.5);
-    --glass-border: linear-gradient(
-      to bottom,
-      oklch(0.75 0.25 320 / 0.2),
-      oklch(0.75 0.25 320 / 0)
-    );
-
-    --border: #b89fff26;
-
-    /* === GLOW SYSTEM === */
-    --glow-primary: 0 0 15px oklch(0.75 0.25 320 / 0.3);
-    --glow-soft: 0 0 60px oklch(92.494% 0.00011 271.152 / 0.226);
-    --glow-large: 0 0 120px oklch(92.494% 0.00011 271.152 / 0.226);
-
-    /* === INTERACTION === */
+    /* UI */
+    --border: oklch(1 0 0 / 0.08);
     --ring: oklch(0.75 0.25 320);
-    --radius: 0.75rem;
+
+    --glow-primary: 0 0 15px oklch(0.75 0.25 320 / 0.3);
+    --glow-soft: 0 0 60px oklch(92.494% 0.00011 271.152 / 0.126);
+    --glow-large: 0 0 120px oklch(92.494% 0.00011 271.152 / 0.226);
   }
-
   .light {
-    --surface: #fafafa --surface-foreground: oklch(0.15 0 0);
+    --background: #fafafa;
+    --foreground: oklch(0.15 0 0);
 
-    --surface-container-lowest: oklch(1 0 0);
-    --surface-container-low: #fefefe;
-    --surface-container: oklch(11.868% 0.00503 17.737);
-    --surface-container-high: oklch(0.92 0 0);
-    --surface-container-highest: oklch(0.9 0 0);
+    --card: #ffffff;
 
-    --on-surface: oklch(0.15 0 0);
-    --on-surface-variant: oklch(0.55 0 0);
-
-    --border: darkgrey;
-
-    --muted: oklch(0.2 0.05 310);
-    --muted-foreground: oklch(0.7 0 0);
+    --muted: #f3f3f3;
+    --muted-foreground: oklch(0.45 0 0);
 
     --primary: #6d28d9;
-    --on-primary: #fefefe;
-    --primary-container: #d1c0ff;
+    --on-primary: #ffffff;
 
-    --glow-primary: 0 0 15px oklch(92% 0.12 320 / 0.35);
-    --glow-soft: 0 0 60px oklch(92% 0.08 320 / 0.25);
-    --glow-large: 0 0 120px oklch(92% 0.08 320 / 0.2);
+    --secondary: #ede9fe;
+    --on-secondary: #2e1065;
+
+    --tertiary: oklch(0.85 0.1 95);
+    --on-tertiary: #3f2a00;
+
+    --success: oklch(0.7 0.18 150);
+    --on-success: #052e16;
+
+    --error: oklch(0.65 0.25 25);
+    --on-error: #ffffff;
+
+    --border: oklch(0 0 0 / 0.1);
+    --ring: oklch(0.6 0.2 320);
   }
 
   * {

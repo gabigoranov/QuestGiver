@@ -19,7 +19,7 @@ export default function Navbar() {
     >
       <AppLogo />
 
-      <Link to="/signin">
+      <Link to="/home">
         <Button
           value="primary"
           className="text-lg font-semibold"

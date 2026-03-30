@@ -44,7 +44,7 @@ export default function ExplanationStepComponent({
 
   return (
     <div
-      className={`w-full h-64 p-8 bg-card rounded-4xl ${border} border flex items-start justify-between shadow-glow-large`}
+      className={`w-full h-64 p-8 bg-card rounded-4xl ${border} border flex items-start justify-between shadow-glow-soft`}
     >
       {/* Icon container */}
       <div
