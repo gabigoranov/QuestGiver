@@ -1,5 +1,12 @@
+import LanguageToggle from "@/components/common/LanguageToggle";
+import { ThemeToggle } from "@/components/common/ThemeToggle";
+
 export default function Profile() {
   return (
-    <div>Profile</div>
-  )
+    <div className="flex flex-col gap-12">
+      <ThemeToggle />
+
+      <LanguageToggle />  
+    </div>
+  );
 }

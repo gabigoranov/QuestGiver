@@ -19,10 +19,10 @@ export default function Navbar() {
     >
       <AppLogo />
 
-      <Link to="/signin">
+      <Link to="/home">
         <Button
           value="primary"
-          className="text-lg text-secondary font-semibold"
+          className="text-lg font-semibold"
         >
           {t("navigation.signIn")}
         </Button>

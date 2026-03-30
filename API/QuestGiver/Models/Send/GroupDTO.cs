@@ -17,6 +17,8 @@ namespace QuestGiver.Models.Send
         [StringLength(200)]
         public string Description { get; set; }
 
-        public DateTime ScheduledDate { get; set; }
+        public DateTime DateCreated { get; set; }
+
+        public int MembersCount { get; set; }
     }
 }
