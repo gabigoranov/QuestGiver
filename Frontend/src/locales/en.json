@@ -13,7 +13,12 @@
     "home": "Home",
     "about": "About",
     "contact": "Contact",
-    "signIn": "Sign In"
+    "signIn": "Sign In",
+    "quests": "Quests",
+    "groups": "Groups",
+    "create": "Create",
+    "rank": "Rank",
+    "profile": "Profile"
   },
   "hero": {
     "title": "Turn Your City <br /> into an <span>Epic <br /> Playground</span>",
@@ -71,5 +76,74 @@
       "bg": "BG",
       "ariaLabel": "Select language"
     }
+  },
+  "auth": {
+    "signIn": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to continue your journey",
+      "email": "Email",
+      "password": "Password",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up"
+    },
+    "signUp": {
+      "title": "Create your account",
+      "subtitle": "Fill in your details to get started",
+      "username": "Username",
+      "birthDate": "Birth Date",
+      "description": "Description",
+      "descriptionPlaceholder": "Tell us a bit about yourself",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign up",
+      "submitting": "Creating account...",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "validation": {
+      "invalidEmail": "Invalid email address",
+      "passwordMin6": "Password must be at least 6 characters",
+      "passwordMin8": "Password must be at least 8 characters",
+      "usernameMin3": "Username must be at least 3 characters",
+      "invalidDate": "Invalid date",
+      "descriptionMax200": "Description must be 200 characters or less",
+      "titleMin3": "Title must be at least 3 characters",
+      "descriptionMin10": "Description must be at least 10 characters"
+    }
+  },
+  "groups": {
+    "page": {
+      "subtitle": "Community hub",
+      "title": "Your Circles"
+    },
+    "filters": {
+      "all": "All Groups",
+      "newQuest": "New Quest",
+      "inProgress": "In Progress",
+      "finished": "Finished"
+    },
+    "card": {
+      "inProgress": "In Progress",
+      "created": "Created",
+      "members": "Members",
+      "enterGroup": "Enter Group"
+    },
+    "create": {
+      "title": "Create a Friend Group",
+      "subtitle": "Fill out the details to start a new group",
+      "groupTitle": "Group Title",
+      "titlePlaceholder": "My Awesome Friends",
+      "description": "Description",
+      "descriptionPlaceholder": "A short description of your friend group...",
+      "submit": "Create Group",
+      "submitting": "Creating..."
+    }
+  },
+  "logo": "QuestBound",
+  "home": {
+    "title": "Home"
   }
 }

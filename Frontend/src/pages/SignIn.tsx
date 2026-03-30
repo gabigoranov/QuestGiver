@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import useAuth from "@/hooks/useAuth";
 import { Eye, EyeOff, Mail } from "lucide-react";
 
@@ -28,6 +29,7 @@ const signInSchema = z.object({
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -58,9 +60,9 @@ export default function SignIn() {
       <Card className="w-full max-w-sm p-6 space-y-6 bg-card border-border rounded-3xl">
         {/* Heading */}
         <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t('auth.signIn.title')}</h1>
           <p className="text-sm text-on-surface-variant">
-            Sign in to continue your journey
+            {t('auth.signIn.subtitle')}
           </p>
         </div>
 
@@ -68,7 +70,7 @@ export default function SignIn() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Email Field */}
           <div className="space-y-1">
-            <Label>Email</Label>
+            <Label>{t('auth.signIn.email')}</Label>
             <div className="relative flex items-center">
               <Mail className="absolute left-3 w-4 h-4 text-on-surface-variant" />
               <Input
@@ -84,9 +86,9 @@ export default function SignIn() {
           {/* Password Field */}
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <Label>Password</Label>
+              <Label>{t('auth.signIn.password')}</Label>
               <Button variant="link" size="sm" type="button">
-                Forgot password?
+                {t('auth.signIn.forgotPassword')}
               </Button>
             </div>
             <div className="relative flex items-center">
@@ -110,15 +112,15 @@ export default function SignIn() {
 
           {/* Submit Button */}
           <Button type="submit" className="w-full text-lg font-semibold" disabled={loading}>
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? t('auth.signIn.submitting') : t('auth.signIn.submit')}
           </Button>
         </form>
 
         {/* Footer */}
         <p className="mt-4 text-center text-xs text-on-surface-variant">
-          Don't have an account?{" "}
+          {t('auth.signIn.noAccount')}{" "}
           <Link to="/signup" className="font-semibold text-primary hover:underline">
-            Sign up
+            {t('auth.signIn.signUp')}
           </Link>
         </p>
       </Card>
