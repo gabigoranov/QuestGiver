@@ -20,36 +20,58 @@ api.interceptors.request.use((config) => {
 });
 
 // TODO: This probably doesnt work lmao
-// Response interceptor: handle 401 and try refresh
+let isRefreshing = false;
+let refreshPromise: Promise<string> | null = null;
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Only try refresh once per request
+    // If we have tried refreshing and get a 401, reject
+    if (originalRequest.url?.includes("/auth/refresh")) {
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
+
       const refreshToken = localStorage.getItem("refreshToken");
 
-      if (refreshToken) {
-        try {
-          const res = await AuthService.refresh(refreshToken);
-          localStorage.setItem("accessToken", res.token.accessToken);
-          localStorage.setItem("refreshToken", res.token.refreshToken);
-          originalRequest.headers.Authorization = `Bearer ${res.token.accessToken}`;
-          return api(originalRequest); // retry original request
-        } catch {
-          // refresh failed, logout handled elsewhere
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
+      if (!refreshToken) {
+        return Promise.reject(error);
+      }
+
+      try {
+        if (!isRefreshing) {
+          isRefreshing = true;
+
+          refreshPromise = AuthService.refresh(refreshToken)
+            .then((res) => {
+              localStorage.setItem("accessToken", res.token.accessToken);
+              localStorage.setItem("refreshToken", res.token.refreshToken);
+              return res.token.accessToken;
+            })
+            .finally(() => {
+              isRefreshing = false;
+            });
         }
+
+        const newAccessToken = await refreshPromise;
+
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+        return api(originalRequest);
+      } catch (err) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        return Promise.reject(err);
       }
     }
 
     return Promise.reject(error);
-  }
+  },
 );
-
 /**
  * A helper method to automatically tansform DTOs so axios can send them to backend
  * Helpts with converting dates to string, and vise-versa

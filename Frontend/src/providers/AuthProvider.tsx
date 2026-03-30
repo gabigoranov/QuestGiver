@@ -15,6 +15,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     setToken(token);
     localStorage.setItem("refreshToken", token.refreshToken);
     localStorage.setItem("accessToken", token.accessToken);
+    console.log(user);
+    console.log(token);
   };
 
   const login = async (email: string, password: string) => {
@@ -62,7 +64,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         const res = await AuthService.refresh(refreshToken);
         saveData(res.user, res.token);
       } catch {
-        logout();
+        //logout();
       } finally {
         setLoading(false); // Done restoring
       }
