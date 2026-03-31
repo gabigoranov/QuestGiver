@@ -4,7 +4,6 @@ import { QuestTimer } from "@/components/quests/QuestTimer";
 import { Button } from "@/components/ui/button";
 import { GroupsService } from "@/services/groupsService";
 import { QuestsService } from "@/services/questsService";
-import { UsersService } from "@/services/usersService";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, RotateCw } from "lucide-react";
 import { useState } from "react";
