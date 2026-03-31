@@ -14,7 +14,7 @@ export default function Navigation() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full rounded-t-3xl border border-border bg-muted backdrop-blur-md px-2 pb-4 pt-3 flex justify-between">
+    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full rounded-t-3xl border-t border-border bg-muted backdrop-blur-md px-2 pb-4 pt-3 flex justify-between">
       <NavItem
         icon={Compass}
         label={t('navigation.quests')}

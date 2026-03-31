@@ -14,6 +14,7 @@ import InfoTag from "../common/InfoTag";
  */
 export function QuestTimer({ quest }: { quest: QuestDTO }) {
   const [timeLeft, setTimeLeft] = useState<string>("");
+  const [colorVariant, setColorVariant] = useState<"primary" | "secondary" | "tertiary" | "error">("primary");
 
   useEffect(() => {
     if (!quest?.scheduledDate) return;
@@ -36,6 +37,10 @@ export function QuestTimer({ quest }: { quest: QuestDTO }) {
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
+
+      if(hours < 4) setColorVariant("error");
+      else if(hours < 8) setColorVariant("tertiary");
+
       setTimeLeft(
         `${hours.toString().padStart(2, "0")}:${minutes
           .toString()
@@ -52,6 +57,6 @@ export function QuestTimer({ quest }: { quest: QuestDTO }) {
   if (!quest) return null;
 
   return (
-    <InfoTag title={timeLeft} icon={<LucideClock />} colorVariant="tertiary" />
+    <InfoTag title={timeLeft} icon={<LucideClock />} colorVariant={colorVariant} />
   );
 }
