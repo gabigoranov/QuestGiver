@@ -47,6 +47,7 @@ builder.Services.AddScoped<IRepository, Repository>();
 builder.Services.AddScoped<IQuestsService, QuestsService>();
 builder.Services.AddScoped<ITokensService, TokensService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IGroupsService, GroupsService>();
 builder.Services.AddScoped<IPasswordHasher<string>, PasswordHasher<string>>();
 builder.Services.AddSingleton(sp =>
