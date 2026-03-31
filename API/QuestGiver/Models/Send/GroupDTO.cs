@@ -1,4 +1,5 @@
-﻿using QuestGiver.Data.Models;
+﻿using QuestGiver.Data.Common;
+using QuestGiver.Data.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -20,5 +21,8 @@ namespace QuestGiver.Models.Send
         public DateTime DateCreated { get; set; }
 
         public int MembersCount { get; set; }
+
+        // If the group has a quest for today, include its status; otherwise, this will be null
+        public QuestStatusType? CurrentQuestStatus { get; set; }
     }
 }

@@ -22,9 +22,10 @@ namespace QuestGiver.Data.Models
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
         [NotMapped]
-        public Guid? CurrentQuestId => Quests.FirstOrDefault(x => DateTime.UtcNow.Date == x.ScheduledDate)?.Id;
+        public Guid? CurrentQuestId => Quests.FirstOrDefault(x => DateTime.UtcNow.Date == x.ScheduledDate.Date)?.Id;
 
-        public virtual Quest? CurrentQuest => Quests.FirstOrDefault(x => DateTime.UtcNow.Date == x.ScheduledDate);
+        [NotMapped]
+        public virtual Quest? CurrentQuest => Quests.FirstOrDefault(x => DateTime.UtcNow.Date == x.ScheduledDate.Date);
 
         // Many-to-many relationship with User through UserFriendGroup
         public virtual ICollection<UserFriendGroup> UserFriendGroups { get; set; } = new List<UserFriendGroup>();

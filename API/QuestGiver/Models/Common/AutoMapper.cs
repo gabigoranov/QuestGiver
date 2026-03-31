@@ -17,7 +17,11 @@ namespace QuestGiver.Models.Common
             this.CreateMap<Data.Models.User, Models.Receive.CreateUserDTO>().ReverseMap();
             this.CreateMap<Data.Models.Token, Models.Send.TokenDTO>().ReverseMap();
             this.CreateMap<Data.Models.FriendGroup, Models.Send.GroupDTO>()
-                .ForMember(x => x.MembersCount, cd => cd.MapFrom(map => map.UserFriendGroups.Count())).ReverseMap();
+                .ForMember(x => x.MembersCount, cd => cd.MapFrom(map => map.UserFriendGroups.Count()))
+                .ForMember(x => x.CurrentQuestStatus, cd => cd.MapFrom(src => src.Quests
+                    .Where(q => q.ScheduledDate.Date == DateTime.UtcNow.Date)
+                    .Select(q => q.Status)
+                    .FirstOrDefault())).ReverseMap();
             this.CreateMap<Data.Models.FriendGroup, Models.Receive.CreateGroupDTO>().ReverseMap();
             this.CreateMap<Data.Models.Quest, Models.Send.QuestDTO>().ReverseMap();
             this.CreateMap<Data.Models.Quest, Models.Receive.CreateQuestDTO>().ReverseMap();

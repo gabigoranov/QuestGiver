@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using QuestGiver.Data.Common;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuestGiver.Data.Models
@@ -37,5 +38,7 @@ namespace QuestGiver.Data.Models
         public Guid FriendGroupId { get; set; }
 
         public virtual FriendGroup FriendGroup { get; set; }
+
+        public QuestStatusType Status { get; set; } = QuestStatusType.New; // Default to New when created
     }
 }

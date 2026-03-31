@@ -81,9 +81,10 @@ namespace QuestGiver.Services.Groups
         /// <inheritdoc/>
         public async Task<List<GroupDTO>> GetGroupsForUserAsync(Guid userId)
         {
-            List<FriendGroup> group = await _repo.All<FriendGroup>().
-                Include(g => g.UserFriendGroups).
-                Where(g => g.UserFriendGroups.Any(ufg => ufg.UserId == userId)).ToListAsync();
+            List<FriendGroup> group = await _repo.All<FriendGroup>()
+                .Include(g => g.UserFriendGroups)
+                .Include(g => g.Quests)
+                .Where(g => g.UserFriendGroups.Any(ufg => ufg.UserId == userId)).ToListAsync();
 
             if(group.Count == 0)
                 throw new KeyNotFoundException("Invalid userId or no groups found for the user.");

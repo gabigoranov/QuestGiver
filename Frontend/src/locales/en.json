@@ -129,7 +129,9 @@
       "inProgress": "In Progress",
       "created": "Created",
       "members": "Members",
-      "enterGroup": "Enter Group"
+      "enterGroup": "Enter Group",
+      "new": "New Quest",
+      "completed": "Finished"
     },
     "create": {
       "title": "Create a Friend Group",

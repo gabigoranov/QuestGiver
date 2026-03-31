@@ -9,6 +9,7 @@ const BASE_URL = "/groups";
 export const GroupsService = {
   getUserGroups: async (): Promise<GroupDTO[]> => {
     const res = await api.get(`${BASE_URL}`);
+    console.log(res);
 
     return res.data;
   },

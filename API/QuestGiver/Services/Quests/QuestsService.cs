@@ -288,6 +288,13 @@ namespace QuestGiver.Services.Quests
             if (!model.FriendGroup.UserFriendGroups.Any(x => x.UserId == userId))
                 throw new UnauthorizedAccessException("User does not belong to this friend group.");
 
+            // When loaded ( viewed by a user ) set to in progress if not completed yet
+            if (model.Status == QuestStatusType.New && model.DateCompleted == null)
+                model.Status = QuestStatusType.InProgress;
+
+            _repo.Update<Quest>(model);
+            await _repo.SaveChangesAsync();
+
             return _mapper.Map<QuestDTO>(model);
         }
 
@@ -325,6 +332,7 @@ namespace QuestGiver.Services.Quests
                 throw new UnauthorizedAccessException("User is not assigned to this quest.");
 
             quest.DateCompleted = DateTime.UtcNow;
+            quest.Status = QuestStatusType.Completed;
 
             // Attribute the reward points to the user
             var user = await _repo.All<User>()
