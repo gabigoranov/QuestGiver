@@ -4,6 +4,7 @@ import { QuestTimer } from "@/components/quests/QuestTimer";
 import { Button } from "@/components/ui/button";
 import { GroupsService } from "@/services/groupsService";
 import { QuestsService } from "@/services/questsService";
+import { UsersService } from "@/services/usersService";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, RotateCw } from "lucide-react";
 import { useState } from "react";
@@ -22,7 +23,6 @@ export default function Group() {
   const {
     isPending,
     isError,
-    data: group,
     error,
   } = useQuery({
     queryKey: ["group", groupId],
@@ -93,7 +93,7 @@ export default function Group() {
 
           <div className="flex items-center justify-between gap-3 bg-muted/50 border border-border rounded-xl px-4 py-3">
             <span className="text-sm text-muted-foreground truncate">
-              https://questbound/group/join/{group.id}
+              https://questbound/group/join/{groupId}
             </span>
 
             <Button
@@ -102,7 +102,7 @@ export default function Group() {
               className="rounded-full px-3"
               onClick={() => {
                 navigator.clipboard.writeText(
-                  `https://questbound/group/join/${group.id}`,
+                  `https://questbound/group/join/${groupId}`,
                 );
 
                 setIsInviteOpen(false);

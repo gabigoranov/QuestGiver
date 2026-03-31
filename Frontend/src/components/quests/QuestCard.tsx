@@ -2,6 +2,9 @@ import type { QuestDTO } from "@/types/Receive/QuestDTO";
 import { LucideCircleStar } from "lucide-react";
 import { Button } from "../ui/button";
 import InfoTag from "../common/InfoTag";
+import { UsersService } from "@/services/usersService";
+import { useQuery } from "@tanstack/react-query";
+import useAuth from "@/hooks/useAuth";
 
 /**
  * QuestCard Component
@@ -14,15 +17,13 @@ import InfoTag from "../common/InfoTag";
  * @export
  */
 export default function QuestCard({ quest }: { quest: QuestDTO }) {
-  /**
-   * TODO: Load the chosen user data via a query
-   * Example:
-   * const { data: chosenUser } = useQuery(["user", quest.userId], () => UsersService.getUserById(quest.userId));
-   */
-  const chosenUser = {
-    username: "@Mandi_UQ",
-    avatarUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtkNjyu1q4JBpkQ4VtBkQ45ambxvph6Uxe6Q&s", // replace with actual data
-  };
+  // Load the current user for the group
+  const { isPending: isUserPending, data: chosenUser } = useQuery({
+    queryKey: ["user", quest!.userId, "chosenUser"],
+    queryFn: () => UsersService.getById(quest!.userId!),
+  });
+
+  const { user: appUser } = useAuth();
 
   return (
     <div className="bg-card rounded-2xl p-6 w-full max-w-sm shadow-glow-soft flex flex-col gap-4">
@@ -31,11 +32,17 @@ export default function QuestCard({ quest }: { quest: QuestDTO }) {
         <span className="text-xs text-primary uppercase tracking-widest font-semibold">
           Today's Quest
         </span>
-        <InfoTag title={`${quest.rewardPoints} XP`} icon={<LucideCircleStar size={16}/>} colorVariant="tertiary"/>
+        <InfoTag
+          title={`${quest.rewardPoints} XP`}
+          icon={<LucideCircleStar size={16} />}
+          colorVariant="tertiary"
+        />
       </div>
 
       {/* Quest Title */}
-      <h2 className="text-text font-heading text-3xl font-bold">{quest.title}</h2>
+      <h2 className="text-text font-heading text-3xl font-bold">
+        {quest.title}
+      </h2>
 
       {/* Quest Description */}
       <p className="text-muted-foreground text-lg">{quest.description}</p>
@@ -43,19 +50,33 @@ export default function QuestCard({ quest }: { quest: QuestDTO }) {
       {/* Chosen User Section */}
       <div className="flex items-center gap-3 bg-background/60 rounded-xl border border-border px-3 py-4 mt-4 mb-4">
         <img
-          src={chosenUser.avatarUrl}
-          alt={chosenUser.username}
+          src={
+            isUserPending
+              ? "https://static.vecteezy.com/system/resources/previews/013/360/247/non_2x/default-avatar-photo-icon-social-media-profile-sign-symbol-vector.jpg"
+              : (chosenUser?.avatarUrl ??
+                "https://static.vecteezy.com/system/resources/previews/013/360/247/non_2x/default-avatar-photo-icon-social-media-profile-sign-symbol-vector.jpg")
+          }
+          alt="user avatar"
           className="w-8 h-8 rounded-full"
         />
-        <span className="text-primary text-md font-medium">
-          {chosenUser.username}
+
+        <span
+          className={`text-md font-medium ${
+            isUserPending
+              ? "text-muted-foreground animate-pulse"
+              : "text-primary"
+          }`}
+        >
+          {isUserPending ? "Loading user..." : chosenUser!.username}
         </span>
       </div>
 
-      {/* Action Button */}
-      <Button className="text-xl py-8 rounded-full font-bold shadow-glow-primary">
-        Upload Evidence
-      </Button>
+      {/* Action Button - if the current user is chosen */}
+      {appUser?.id === quest.userId && (
+        <Button className="text-xl py-8 rounded-full font-bold shadow-glow-primary">
+          Upload Evidence
+        </Button>
+      )}
     </div>
   );
 }
