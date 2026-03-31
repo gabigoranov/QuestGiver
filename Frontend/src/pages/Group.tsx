@@ -28,9 +28,7 @@ export default function Group() {
   // Load the current quest for the group
   const {
     isPending: isQuestPending,
-    isError: isQuestError,
     data: quest,
-    error: questError,
   } = useQuery({
     queryKey: ["group", groupId, "currentQuest"],
     queryFn: () => QuestsService.getCurrentQuestForGroup(groupId!),
