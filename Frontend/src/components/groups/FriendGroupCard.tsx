@@ -3,6 +3,7 @@ import type { GroupDTO } from "@/types/Receive/GroupDTO";
 import InfoTag from "../common/InfoTag";
 import { Button } from "../ui/button";
 import { QuestStatusType } from "@/types/Receive/QuestStatusType";
+import { Link } from "react-router-dom";
 
 /**
  * Used in the groups page to display a signle group
@@ -63,9 +64,12 @@ export default function FriendGroupCard(data: GroupDTO) {
         <span className="text-muted-foreground font-semibold">
           {data.membersCount} {t("groups.card.members")}
         </span>
-        <Button className="px-6 py-5 rounded-full text-sm font-semibold">
-          {t("groups.card.enterGroup")}
-        </Button>
+
+        <Link to={`/group/${data.id}`}>
+          <Button className="px-6 py-5 rounded-full text-sm font-semibold">
+            {t("groups.card.enterGroup")}
+          </Button>
+        </Link>
       </div>
     </div>
   );

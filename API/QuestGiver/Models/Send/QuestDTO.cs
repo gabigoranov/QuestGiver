@@ -19,6 +19,7 @@ namespace QuestGiver.Models.Send
 
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
         public DateTime? DateCompleted { get; set; }
+        public DateTime ScheduledDate { get; set; }
 
         [NotMapped]
         public bool IsCompleted => DateCompleted.HasValue; // Runtime calculated completion flag

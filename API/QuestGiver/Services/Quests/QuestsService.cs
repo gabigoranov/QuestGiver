@@ -279,7 +279,7 @@ namespace QuestGiver.Services.Quests
             Quest? model = await _repo.AllReadonly<Quest>()
                 .Include(x => x.FriendGroup)
                 .ThenInclude(x => x.UserFriendGroups)
-                .SingleOrDefaultAsync(x => x.FriendGroupId == groupId && x.ScheduledDate == DateTime.UtcNow.Date);
+                .SingleOrDefaultAsync(x => x.FriendGroupId == groupId && x.ScheduledDate.Date == DateTime.UtcNow.Date);
 
             if(model == null)
                 throw new KeyNotFoundException("No quests found for the friend group.");

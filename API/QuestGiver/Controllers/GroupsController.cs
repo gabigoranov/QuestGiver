@@ -41,6 +41,17 @@ namespace QuestGiver.Controllers
             return Ok(groups);
         }
 
+
+
+        [HttpGet("{groupId}")]
+        public async Task<IActionResult> GetById([FromRoute] Guid groupId)
+        {
+            // Load userId from JWT token
+            Guid userId = User.GetUserId();
+            GroupDTO groupDetails = await _groupsService.GetGroupByIdAsync(groupId, userId);
+            return Ok(groupDetails);
+        }
+
         /// <summary>
         /// Handles creating a new friend group.
         /// </summary>
