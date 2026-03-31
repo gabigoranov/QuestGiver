@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { GroupsService } from "@/services/groupsService";
+import { useQueryClient } from "@tanstack/react-query";
 
 /**
  * Zod schema for CreateGroup form validation
@@ -28,6 +29,7 @@ export default function CreateGroup() {
   const [loading, setLoading] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient()
 
   const {
     register,
@@ -42,6 +44,8 @@ export default function CreateGroup() {
     try {
       await GroupsService.create(data);
       console.log("Group created successfully");
+      queryClient.invalidateQueries({ queryKey: ['todos'] }) // Invalidate groups query to refresh the list
+
       navigate("/home"); // Redirect to home after success
     } catch (err) {
       console.error("Failed to create group:", err);
