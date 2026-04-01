@@ -39,6 +39,15 @@ const steps = [
   },
 ];
 
+
+
+/**
+ * A simple page to give an idea of how to user the app
+ * to the user
+ *
+ * @export
+ * @return {*} 
+ */
 export default function Guide() {
   return (
     <div className="page min-h-screen">

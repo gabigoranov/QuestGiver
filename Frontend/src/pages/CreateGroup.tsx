@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { GroupsService } from "@/services/groupsService";
 import { useQueryClient } from "@tanstack/react-query";
+import LoadingScreen from "@/components/common/LoadingScreen";
 
 /**
  * Zod schema for CreateGroup form validation
@@ -53,6 +54,10 @@ export default function CreateGroup() {
       setLoading(false);
     }
   };
+
+  if(loading){
+    return <LoadingScreen />
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">

@@ -11,9 +11,14 @@ import Home from "@/pages/Home";
 import Group from "@/pages/Group";
 import JoinGroup from "@/pages/JoinGroup";
 import Guide from "@/pages/Guide";
+import PageNotFound from "@/components/common/PageNotFound";
 
 // Define the routes for the application
 export const router = createBrowserRouter([
+  {
+    path: "*",
+    element: <PageNotFound />, // For unexisting pages
+  },
   {
     path: "/",
     element: <LandingPage />,

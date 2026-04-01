@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using OpenAI;
 using QuestGiver.Data;
 using QuestGiver.Data.Common;
+using QuestGiver.Middleware;
 using QuestGiver.Services.Groups;
 using QuestGiver.Services.Quests;
 using QuestGiver.Services.Tokens;
@@ -137,6 +138,9 @@ if (true) // IN DEVELOPMENT, I WANT TO SEE SWAGGER WHEN I OPEN WEBSITE
         return Task.CompletedTask;
     });
 }
+
+// Global error handling middleware
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 

@@ -1,5 +1,8 @@
 import BottomSheet from "@/components/common/BottomSheet";
+import ErrorBoundary from "@/components/common/ErrorBoundary";
+import LoadingScreen from "@/components/common/LoadingScreen";
 import QuestCard from "@/components/quests/QuestCard";
+import QuestCardFallback from "@/components/quests/QuestCardFallback";
 import { QuestTimer } from "@/components/quests/QuestTimer";
 import { Button } from "@/components/ui/button";
 import { GroupsService } from "@/services/groupsService";
@@ -19,11 +22,7 @@ export default function Group() {
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   // Load groupId from params
   const { groupId } = useParams<{ groupId: string }>();
-  const {
-    isPending,
-    isError,
-    error,
-  } = useQuery({
+  const { isPending, isError, error } = useQuery({
     queryKey: ["group", groupId],
     queryFn: () => GroupsService.getGroupById(groupId!),
     enabled: !!groupId, // Only run the query if groupId is available
@@ -37,7 +36,7 @@ export default function Group() {
   });
 
   if (isPending || isQuestPending) {
-    return <span>Loading...</span>;
+    return <LoadingScreen />
   }
 
   if (isError) {
@@ -51,19 +50,21 @@ export default function Group() {
         <QuestTimer quest={quest!} />
       </div>
 
-      {/* Quest Card */}
-      <div className="flex flex-row items-center justify-center">
-        <QuestCard quest={quest!} />
-      </div>
+      <ErrorBoundary fallback={<QuestCardFallback />}>
+        {/* Quest Card */}
+        <div className="flex flex-row items-center justify-center">
+          <QuestCard quest={quest!} />
+        </div>
 
-      {/* Skip button */}
-      <Button
-        variant="ghost"
-        className="text-sm py-2 rounded-full uppercase font-semibold tracking-wider -mt-2 flex items-center gap-3 text-muted-foreground"
-      >
-        <RotateCw size={16} />
-        Skip Quest (Vote Required)
-      </Button>
+        {/* Skip button */}
+        <Button
+          variant="ghost"
+          className="text-sm py-2 rounded-full uppercase font-semibold tracking-wider -mt-2 flex items-center gap-3 text-muted-foreground"
+        >
+          <RotateCw size={16} />
+          Skip Quest (Vote Required)
+        </Button>
+      </ErrorBoundary>
 
       {/* Controls - Invite Users, Manage Members */}
       <div className="flex items-center gap-3 mt-4">

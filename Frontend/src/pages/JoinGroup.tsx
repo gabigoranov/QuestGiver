@@ -1,3 +1,4 @@
+import LoadingScreen from "@/components/common/LoadingScreen";
 import { GroupsService } from "@/services/groupsService";
 import { useQuery } from "@tanstack/react-query";
 import { Navigate, useParams } from "react-router-dom";
@@ -15,7 +16,7 @@ export default function JoinGroup() {
   });
 
   if(isPending) {
-    return <h1>Loading...</h1>;
+    return <LoadingScreen />;
   }
 
   if(isError) {
