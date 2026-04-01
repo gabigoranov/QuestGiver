@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import FriendGroupCard from "@/components/groups/FriendGroupCard";
 import { GroupsService } from "@/services/groupsService";
 import { useQuery } from "@tanstack/react-query";
+import LoadingScreen from "@/components/common/LoadingScreen";
 
 /**
  * Page for the authenticated user
@@ -18,7 +19,7 @@ export default function Groups() {
   });
 
   if (isPending) {
-    return <span>{t('common.loading')}</span>;
+    return <LoadingScreen />;
   }
 
   if (isError) {
