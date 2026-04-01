@@ -118,5 +118,7 @@ namespace QuestGiver.Services.Groups
             _repo.Delete<UserFriendGroup>(relationship);
             await _repo.SaveChangesAsync();
         }
+
+        
     }
 }

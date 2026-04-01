@@ -92,7 +92,7 @@ export default function Group() {
 
           <div className="flex items-center justify-between gap-3 bg-muted/50 border border-border rounded-xl px-4 py-3">
             <span className="text-sm text-muted-foreground truncate">
-              https://questbound/group/join/{groupId}
+              {window.location.toString()}/group/join/{groupId}
             </span>
 
             <Button

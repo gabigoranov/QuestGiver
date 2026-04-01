@@ -44,17 +44,17 @@ export default function ExplanationStepComponent({
 
   return (
     <div
-      className={`w-full h-64 p-8 bg-card rounded-4xl ${border} border flex items-start justify-between shadow-glow-soft`}
+      className={`w-full min-h-64 p-8 bg-card rounded-3xl ${border} border flex items-start justify-between shadow-glow-soft gap-4`}
     >
       {/* Icon container */}
       <div
-        className={`w-20 h-20 rounded-2xl ${bg} flex items-center justify-center ${text} text-lg font-bold shadow-glow-soft`}
+        className={`w-16 h-16 rounded-2xl ${bg} flex items-center justify-center ${text} text-lg font-bold shadow-glow-soft`}
       >
         {icon}
       </div>
 
       {/* Content */}
-      <div className="flex flex-col items-start justify-start text-start w-4/6">
+      <div className="flex flex-col items-start justify-start text-start flex-1">
         <h3 className={`text-3xl font-bold text-text`}>
           {headingText || t("explanation.steps.generation.heading")}
         </h3>

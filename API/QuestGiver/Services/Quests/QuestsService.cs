@@ -7,6 +7,7 @@ using QuestGiver.Data.Constants;
 using QuestGiver.Data.Models;
 using QuestGiver.Models.Receive;
 using QuestGiver.Models.Send;
+using QuestGiver.Services.Groups;
 using System.Diagnostics;
 using System.Text.Json;
 
@@ -56,27 +57,37 @@ namespace QuestGiver.Services.Quests
             if(neededCount <= 0)
                 return;
 
-            var group = await GetFriendGroupWithUsersAsync(groupId);
-            var questModels = AssignQuestsToUsers(group.Users, group.LastUserId, neededCount, groupId);
+            await SetIsGeneratingQuestsAsync(groupId, true);
 
-            var prompt = BuildQuestGenerationPrompt(questModels, neededCount);
-
-            var response = await _chatClient.CompleteChatAsync(prompt);
-            var content = response.Value.Content[0].Text;
-
-            // Deserialize generated content
-            var options = new JsonSerializerOptions
+            try
             {
-                PropertyNameCaseInsensitive = true
-            };
-            GeneratedQuestDTO[]? deserialized = JsonSerializer.Deserialize<GeneratedQuestDTO[]>(content, options);
+                var group = await GetFriendGroupWithUsersAsync(groupId);
+                var questModels = AssignQuestsToUsers(group.Users, group.LastUserId, neededCount, groupId);
 
-            if (deserialized == null)
-                throw new ArgumentNullException("Could not generate quests.");
+                var prompt = BuildQuestGenerationPrompt(questModels, neededCount);
 
-            // Map the generated quests while managing the scheduled dates
-            await _repo.AddRangeAsync<Quest>(MapDeserializedGeneratedQuests(deserialized, groupId));
-            await _repo.SaveChangesAsync();
+                var response = await _chatClient.CompleteChatAsync(prompt);
+                var content = response.Value.Content[0].Text;
+
+                // Deserialize generated content
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+                GeneratedQuestDTO[]? deserialized = JsonSerializer.Deserialize<GeneratedQuestDTO[]>(content, options);
+
+                if (deserialized == null)
+                    throw new ArgumentNullException("Could not generate quests.");
+
+                // Map the generated quests while managing the scheduled dates
+                await _repo.AddRangeAsync<Quest>(MapDeserializedGeneratedQuests(deserialized, groupId));
+                await _repo.SaveChangesAsync();
+            }
+            catch
+            {
+                await SetIsGeneratingQuestsAsync(groupId, false);
+                throw;
+            }
         }
 
         #region Helpers
@@ -281,8 +292,14 @@ namespace QuestGiver.Services.Quests
                 .ThenInclude(x => x.UserFriendGroups)
                 .SingleOrDefaultAsync(x => x.FriendGroupId == groupId && x.ScheduledDate.Date == DateTime.UtcNow.Date);
 
-            if(model == null)
-                throw new KeyNotFoundException("No quests found for the friend group.");
+            FriendGroup? group = await _repo.AllReadonly<FriendGroup>().FirstOrDefaultAsync(x => x.Id == groupId);
+
+            // Start generating quests if the queue is empty
+            if (model == null && group?.IsGeneratingQuests == false)
+            {
+                await GenerateQuestsForGroupAsync(groupId, CalculateNeededQuestsCount(groupId));
+                throw new KeyNotFoundException("No scheduled quest was found");
+            }
 
             // If the user does not belong => UnauthorizedAccessException
             if (!model.FriendGroup.UserFriendGroups.Any(x => x.UserId == userId))
@@ -362,6 +379,20 @@ namespace QuestGiver.Services.Quests
             }
 
             return _mapper.Map<QuestDTO>(quest);
+        }
+
+        /// <inheritdoc />
+        public async Task SetIsGeneratingQuestsAsync(Guid groupId, bool isGeneratingQuests)
+        {
+            FriendGroup? group = await _repo.AllReadonly<FriendGroup>().FirstOrDefaultAsync(g => g.Id == groupId);
+
+            if (group == null)
+                throw new KeyNotFoundException("No group with specified id was found");
+
+            group.IsGeneratingQuests = isGeneratingQuests;
+
+            _repo.Update(group);
+            await _repo.SaveChangesAsync();
         }
     }
 }
