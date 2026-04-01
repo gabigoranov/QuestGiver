@@ -90,7 +90,7 @@
     --ring: oklch(0.75 0.25 320);
 
     --glow-primary: 0 0 15px oklch(0.75 0.25 320 / 0.3);
-    --glow-soft: 0 0 60px oklch(92.494% 0.00011 271.152 / 0.126);
+    --glow-soft: 0 0 10px oklch(92.494% 0.00011 271.152 / 0.126);
     --glow-large: 0 0 120px oklch(92.494% 0.00011 271.152 / 0.226);
   }
   .light {
@@ -128,21 +128,21 @@
 
   body {
     @apply bg-background text-foreground;
-    max-width: 425px;
     margin: 0 auto;
+    max-width: 425px;
   }
 }
 
 /* Shadcn/ui overwrites */
 
-.page{
+.page {
   padding: 2rem 1rem;
-  background: linear-gradient(180deg, oklch(from var(--primary) l c h / 0.2) 0%, var(--background) 60%);
-  height: 100%;
-  overflow-y: scroll;
-  margin-bottom: 10rem;
+  background: linear-gradient(
+    180deg,
+    oklch(from var(--primary) l c h / 0.2) 0%,
+    var(--background) 60%
+  );
 }
-
 @layer components {
   .card {
     background: var(--glass-bg);
@@ -192,4 +192,22 @@
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
   }
+}
+
+
+/* Entire scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+/* Track (background) */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Scroll thumb */
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 999px;
 }

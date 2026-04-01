@@ -21,6 +21,9 @@ namespace QuestGiver.Data.Models
 
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
+        // a flag to know if quests are already being generated, so as to not duplicate
+        public bool IsGeneratingQuests { get; set; } = false;
+
         [NotMapped]
         public Guid? CurrentQuestId => Quests.FirstOrDefault(x => DateTime.UtcNow.Date == x.ScheduledDate.Date)?.Id;
 

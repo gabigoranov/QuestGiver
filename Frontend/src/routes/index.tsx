@@ -10,6 +10,7 @@ import Groups from "@/pages/Groups";
 import Home from "@/pages/Home";
 import Group from "@/pages/Group";
 import JoinGroup from "@/pages/JoinGroup";
+import Guide from "@/pages/Guide";
 
 // Define the routes for the application
 export const router = createBrowserRouter([
@@ -55,6 +56,10 @@ export const router = createBrowserRouter([
       {
         path: "/group/join/:groupId",
         element: <JoinGroup />,
+      },
+      {
+        path: "/guide",
+        element: <Guide />,
       },
       // future pages:
     ],

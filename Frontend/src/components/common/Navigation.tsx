@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Compass, Users, Plus, BarChart3, User } from "lucide-react";
+import { Compass, Users, Plus, User, LucideBookOpen } from "lucide-react";
 import NavItem from "./NavItem";
 
 /**
@@ -14,7 +14,7 @@ export default function Navigation() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full rounded-t-3xl border-t border-border bg-muted backdrop-blur-md px-2 pb-4 pt-3 flex justify-between">
+    <nav className="shrink-0 w-full rounded-t-3xl border-t border-border bg-muted backdrop-blur-md px-2 pb-4 pt-3 flex justify-between">
       <NavItem
         icon={Compass}
         label={t('navigation.quests')}
@@ -37,10 +37,10 @@ export default function Navigation() {
         onClick={navigate}
       />
       <NavItem
-        icon={BarChart3}
-        label={t('navigation.rank')}
-        path="/rank"
-        active={isActive("/rank")}
+        icon={LucideBookOpen}
+        label={t('navigation.guide')}
+        path="/guide"
+        active={isActive("/guide")}
         onClick={navigate}
       />
       <NavItem
