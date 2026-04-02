@@ -11,7 +11,7 @@ namespace QuestGiver.Data.Models
     public abstract class Vote
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Required]
         [StringLength(200)]

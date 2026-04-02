@@ -6,6 +6,12 @@
     /// </summary>
     public class UserVote
     {
+        public UserVote(Guid userId, Guid voteId)
+        {
+            UserId = userId;
+            VoteId = voteId;
+        }
+
         public Guid UserId { get; set; }
         public virtual User User { get; set; }
         public Guid VoteId { get; set; }
