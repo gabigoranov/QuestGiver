@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using QuestGiver.Extensions;
+using QuestGiver.Models.Receive;
+using QuestGiver.Models.Send;
+using QuestGiver.Services.Votes;
 
 namespace QuestGiver.Controllers
 {
@@ -12,6 +16,16 @@ namespace QuestGiver.Controllers
     [ApiController]
     public class VotesController : ControllerBase
     {
+        private readonly IVotesService _votesService;
+
+        /// <summary>
+        /// Initializes a new instance of the VotesController class with the specified votes service.
+        /// </summary>
+        /// <param name="votesService">The service used to manage and process vote-related operations. Cannot be null.</param>
+        public VotesController(IVotesService votesService)
+        {
+            _votesService = votesService;
+        }
 
         /// <summary>
         /// Loads the current vote for a quest
@@ -22,7 +36,15 @@ namespace QuestGiver.Controllers
         [HttpGet("quest/{questId}")]
         public async Task<IActionResult> GetQuestVote([FromRoute] Guid questId)
         {
-            throw new NotImplementedException();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            // Load userId from JWT token
+            Guid userId = User.GetUserId();
+
+            VoteDTO activeVote = await _votesService.GetActiveQuestVoteAsync(questId, userId);
+
+            return Ok(activeVote);
         }
 
         /// <summary>
@@ -33,9 +55,17 @@ namespace QuestGiver.Controllers
         /// </remarks>
         /// <returns>The new vote</returns>
         [HttpPost]
-        public async Task<IActionResult> CreateVote() // Will have some kind of dto when i implement it
+        public async Task<IActionResult> CreateVote([FromBody] CreateVoteDTO model) 
         {
-            throw new NotImplementedException(); 
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            // Load userId from JWT token
+            Guid userId = User.GetUserId();
+
+            VoteDTO res = await _votesService.CreateVoteAsync(model, userId);
+
+            return Ok(res);
         }
 
         /// <summary>
@@ -43,9 +73,17 @@ namespace QuestGiver.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost("{voteId}/vote")]
-        public async Task<IActionResult> SubmitIndividualVote([FromRoute] Guid voteId) // Will have some kind of dto when i implement it
-        {
-            throw new NotImplementedException(); 
+        public async Task<IActionResult> SubmitIndividualVote([FromRoute] Guid voteId, [FromBody] SubmitVoteRequest model)
+        { 
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            // Load userId from JWT token
+            Guid userId = User.GetUserId();
+
+            await _votesService.SubmitIndividualVoteAsync(voteId, userId, model.Decision);
+
+            return Ok();
         }
     }
 }
