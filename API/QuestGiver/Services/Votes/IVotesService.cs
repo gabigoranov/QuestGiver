@@ -35,5 +35,23 @@ namespace QuestGiver.Services.Votes
         /// <param name="decision">The user's decision ( true / false )</param>
         /// <returns>Nothing</returns>
         Task SubmitIndividualVoteAsync(Guid voteId, Guid userId, bool decision);
+
+        /// <summary>
+        /// Creates a new UserVote ( used mainly when a user joins a group mid vote )
+        /// </summary>
+        /// <param name="voteId">The vote id</param>
+        /// <param name="userId">The id of the new user</param>
+        /// <returns>Nothing</returns>
+        Task CreateUserVoteAsync(Guid voteId, Guid userId);
+
+        /// <summary>
+        /// Removes a UserVote from a Vote entity ( used mainly if a user leaves a group mid vote )
+        /// </summary>
+        /// <param name="voteId">The id of the vote</param>
+        /// <param name="userId">The id of the user</param>
+        /// <returns>Nothing</returns>
+        Task DeleteUserVoteAsync(Guid voteId, Guid userId);
+
+
     }
 }

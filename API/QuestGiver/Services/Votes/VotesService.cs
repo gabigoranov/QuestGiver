@@ -26,6 +26,27 @@ namespace QuestGiver.Services.Votes
         }
 
         /// <inheritdoc />
+        public async Task CreateUserVoteAsync(Guid voteId, Guid userId)
+        {
+            Vote? vote = await _repo.AllReadonly<Vote>().FirstOrDefaultAsync(x => x.Id == voteId);
+
+            if (vote == null)
+                throw new KeyNotFoundException("No vote with specified id was found");
+
+            User? user = await _repo.AllReadonly<User>().FirstOrDefaultAsync(x => x.Id == userId);
+            if (user == null)
+                throw new KeyNotFoundException("No user with specified id was found");
+
+            // If a vote has already been decided, do not add a new uservote to not mess with history
+            if (vote.Decision != null)
+                return;
+
+            UserVote res = new UserVote(userId, voteId);
+            await _repo.AddAsync(res);
+            await _repo.SaveChangesAsync();
+        }
+
+        /// <inheritdoc />
         public async Task<VoteDTO> CreateVoteAsync(CreateVoteDTO model, Guid userId)
         {
             // we need to verify that there are no other active votes before creating a new one
@@ -62,6 +83,16 @@ namespace QuestGiver.Services.Votes
             await _repo.SaveChangesAsync();
 
             return _mapper.Map<VoteDTO>(res);
+        }
+
+        /// <inheritdoc />
+        public async Task DeleteUserVoteAsync(Guid voteId, Guid userId)
+        {
+            UserVote? userVote = await _repo.All<UserVote>().FirstOrDefaultAsync(x => x.UserId == userId && x.VoteId == voteId);
+
+            if (userVote == null) throw new KeyNotFoundException("No UserVote with specified id was found");
+
+            await _repo.ExecuteDeleteAsync<UserVote>(x => x.UserId == userId && x.VoteId == voteId);
         }
 
         /// <inheritdoc />
