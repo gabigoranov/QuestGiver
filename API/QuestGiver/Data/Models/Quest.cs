@@ -40,5 +40,11 @@ namespace QuestGiver.Data.Models
         public virtual FriendGroup FriendGroup { get; set; }
 
         public QuestStatusType Status { get; set; } = QuestStatusType.New; // Default to New when created
+
+        /// <summary>
+        /// Navigational property for the one to many relationship
+        /// Can have a completion vote, can have a skip vote
+        /// </summary>
+        public ICollection<Vote> Votes { get; set; } = new List<Vote>();
     }
 }

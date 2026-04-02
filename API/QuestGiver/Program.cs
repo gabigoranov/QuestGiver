@@ -11,6 +11,7 @@ using QuestGiver.Services.Groups;
 using QuestGiver.Services.Quests;
 using QuestGiver.Services.Tokens;
 using QuestGiver.Services.Users;
+using QuestGiver.Services.Votes;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,6 +49,7 @@ builder.Services.AddScoped<IRepository, Repository>();
 builder.Services.AddScoped<IQuestsService, QuestsService>();
 builder.Services.AddScoped<ITokensService, TokensService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IVotesService, VotesService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IGroupsService, GroupsService>();
 builder.Services.AddScoped<IPasswordHasher<string>, PasswordHasher<string>>();
