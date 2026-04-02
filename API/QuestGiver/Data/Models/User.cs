@@ -39,6 +39,7 @@ namespace QuestGiver.Data.Models
         public virtual ICollection<UserFriendGroup> UserFriendGroups { get; set; } = new List<UserFriendGroup>();
         public virtual ICollection<Quest> Quests { get; set; } = new List<Quest>();
         public virtual ICollection<Token> Tokens { get; set; } = new List<Token>(); // Use a One-to-Many relationship for tokens to allow multiple active sessions on different devices
+        public virtual ICollection<UserVote> UserVotes { get; set; } = new List<UserVote>(); // Use a One-to-Many relationship for tokens to allow multiple active sessions on different devices
 
         [NotMapped]
         public virtual IEnumerable<Quest> CurrentQuests => Quests.Where(x => DateTime.UtcNow.Date == x.ScheduledDate); // Runtime calculated property to get the most recent quest
