@@ -1,27 +1,58 @@
 import { Menu, User } from "lucide-react";
 import AppLogo from "./AppLogo";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import BottomSheet from "../common/BottomSheet";
+import { ThemeToggle } from "./ThemeToggle";
+import LanguageToggle from "./LanguageToggle";
 
 /**
  * Used in the main layout
- *
- * @export
- * @return {*}
  */
 export default function TopBar() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
-    <div className="px-4 py-3 flex bg-muted items-center justify-between shadow-glow-soft text-primary border border-b-border">
-      {/* Hamburger menu */}
-      <Menu />
+    <>
+      <div className="px-4 py-3 flex bg-muted items-center justify-between shadow-glow-soft text-primary border border-b-border">
+        {/* Hamburger menu */}
+        <button
+          onClick={() => setIsMenuOpen(true)}
+          className="p-2 rounded-lg hover:bg-background/60 transition"
+        >
+          <Menu />
+        </button>
 
-      <Link to="/">
-        <AppLogo />
-      </Link>
+        {/* Logo */}
+        <Link to="/">
+          <AppLogo />
+        </Link>
 
-      {/* Temporary default user avatar */}
-      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-        <User size={24} />
+        {/* Temporary default user avatar */}
+        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+          <User size={24} />
+        </div>
       </div>
-    </div>
+
+      {/* Bottom Sheet Menu */}
+      <BottomSheet isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)}>
+        <div className="flex flex-col gap-6 pb-4">
+          {/* Title */}
+          <h2 className="text-lg font-semibold text-center">Settings</h2>
+
+          {/* Theme */}
+          <div className="flex items-center justify-between px-2">
+            <span className="text-sm">Theme</span>
+            <ThemeToggle />
+          </div>
+
+          {/* Language */}
+          <div className="flex items-center justify-between px-2">
+            <span className="text-sm">Language</span>
+            <LanguageToggle />
+          </div>
+        </div>
+      </BottomSheet>
+    </>
   );
 }

@@ -424,5 +424,12 @@ namespace QuestGiver.Services.Quests
 
             return _mapper.Map<QuestDTO>(quest);
         }
+
+        /// <inheritdoc />
+        public async Task<List<QuestDTO>> GetAllUserQuests(Guid userId)
+        {
+            var res = await _repo.AllReadonly<Quest>().Where(x => x.UserId == userId && x.ScheduledDate <= DateTime.UtcNow).ToListAsync();
+            return _mapper.Map<List<QuestDTO>>(res);
+        }
     }
 }
