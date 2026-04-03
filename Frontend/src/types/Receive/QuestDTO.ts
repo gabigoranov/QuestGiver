@@ -8,4 +8,5 @@ export type QuestDTO = {
   isCompleted: boolean; 
   rewardPoints: number;
   userId: string; 
+  hasActiveVote: boolean;
 };

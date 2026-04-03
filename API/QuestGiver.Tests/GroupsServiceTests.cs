@@ -9,6 +9,7 @@ using QuestGiver.Models.Receive;
 using QuestGiver.Models.Send;
 using QuestGiver.Services.Groups;
 using QuestGiver.Services.Quests;
+using QuestGiver.Services.Votes;
 using System;
 using System.Threading.Tasks;
 using Xunit;
@@ -25,6 +26,7 @@ namespace QuestGiver.Tests
         private readonly IRepository _repo;
         private readonly IMapper _mapper;
         private readonly Mock<IQuestsService> _mockQuestsService;
+        private readonly Mock<IVotesService> _mockVotesService;
         private readonly GroupsService _groupsService;
 
         public GroupsServiceTests()
@@ -43,8 +45,9 @@ namespace QuestGiver.Tests
             _mapper = mappingConfig.CreateMapper();
 
             _mockQuestsService = new Mock<IQuestsService>();
+            _mockVotesService = new Mock<IVotesService>();
 
-            _groupsService = new GroupsService(_repo, _mapper, _mockQuestsService.Object);
+            _groupsService = new GroupsService(_repo, _mapper, _mockQuestsService.Object, _mockVotesService.Object);
         }
 
         public void Dispose()

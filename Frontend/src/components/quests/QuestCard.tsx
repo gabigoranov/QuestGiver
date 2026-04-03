@@ -1,10 +1,13 @@
 import type { QuestDTO } from "@/types/Receive/QuestDTO";
 import { LucideCircleStar } from "lucide-react";
-import { Button } from "../ui/button";
 import InfoTag from "../common/InfoTag";
 import { UsersService } from "@/services/usersService";
 import { useQuery } from "@tanstack/react-query";
 import useAuth from "@/hooks/useAuth";
+import { VotesService } from "@/services/votesService";
+import QuestCardVote from "./QuestCardVote";
+import QuestCardCreateSkipVote from "./QuestCardCreateSkipVote";
+import QuestCardCreateCompletionVote from "./QuestCardCreateCompletionVote";
 
 /**
  * QuestCard Component
@@ -16,14 +19,25 @@ import useAuth from "@/hooks/useAuth";
  *
  * @export
  */
-export default function QuestCard({ quest }: { quest: QuestDTO }) {
+export default function QuestCard({ quest, groupId }: { quest: QuestDTO, groupId: string }) {
+  const { user: appUser } = useAuth();
+
   // Load the current user for the group
   const { isPending: isUserPending, data: chosenUser } = useQuery({
     queryKey: ["user", quest!.userId, "chosenUser"],
     queryFn: () => UsersService.getById(quest!.userId!),
   });
 
-  const { user: appUser } = useAuth();
+  console.log(quest);
+
+  // Load the current vote for the quest ( there could not be one )
+  const { data: activeVote } = useQuery({
+    queryKey: ["vote", quest.id, "quest-vote"],
+    queryFn: () => VotesService.getQuestVote(quest.id),
+    enabled: !!quest.hasActiveVote,
+  });
+
+
 
   return (
     <div className="bg-card rounded-2xl p-6 w-full max-w-sm shadow-glow-soft flex flex-col gap-4">
@@ -72,10 +86,16 @@ export default function QuestCard({ quest }: { quest: QuestDTO }) {
       </div>
 
       {/* Action Button - if the current user is chosen */}
-      {appUser?.id === quest.userId && (
-        <Button className="text-xl py-8 rounded-full font-bold shadow-glow-primary">
-          Upload Evidence
-        </Button>
+      {activeVote ? (
+        <QuestCardVote vote={activeVote} chosenUserId={quest.userId} />
+      ) : (
+        appUser?.id === quest.userId && (
+          <>
+            <QuestCardCreateCompletionVote quest={quest} groupId={groupId} />
+
+            <QuestCardCreateSkipVote quest={quest} groupId={groupId} />
+          </>
+        )
       )}
     </div>
   );

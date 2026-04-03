@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using QuestGiver.Data.Models;
+using QuestGiver.Models.Receive;
 using QuestGiver.Models.Send;
 
 namespace QuestGiver.Models.Common
@@ -24,10 +25,13 @@ namespace QuestGiver.Models.Common
                     .Select(q => q.Status)
                     .FirstOrDefault())).ReverseMap();
             this.CreateMap<Data.Models.FriendGroup, Models.Receive.CreateGroupDTO>().ReverseMap();
-            this.CreateMap<Data.Models.Quest, Models.Send.QuestDTO>().ReverseMap();
+            this.CreateMap<Data.Models.Quest, Models.Send.QuestDTO>()
+                .ForMember(x => x.HasActiveVote, cd => cd.MapFrom(map => map.Votes.Any(x => x.Decision == null)))
+                .ReverseMap();
             this.CreateMap<Data.Models.Quest, Models.Receive.CreateQuestDTO>().ReverseMap();
             this.CreateMap<Data.Models.Vote, Models.Send.VoteDTO>().ReverseMap();
-            this.CreateMap<Models.Receive.CreateVoteDTO, Vote>().ReverseMap();
+            CreateMap<CreateVoteDTO, SkipVote>();
+            CreateMap<CreateVoteDTO, CompletionVote>();
             this.CreateMap<Data.Models.UserVote, Models.Send.UserVoteDTO>().ReverseMap();
             this.CreateMap<Data.Models.Quest, Models.Receive.GeneratedQuestDTO>().ReverseMap();
             this.CreateMap<Data.Models.User, GenerateQuestDTO>()

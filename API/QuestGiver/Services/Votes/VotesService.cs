@@ -41,7 +41,11 @@ namespace QuestGiver.Services.Votes
             if (vote.Decision != null)
                 return;
 
-            UserVote res = new UserVote(userId, voteId);
+            UserVote res = new UserVote() { 
+                UserId = userId,
+                Vote = vote
+            };
+
             await _repo.AddAsync(res);
             await _repo.SaveChangesAsync();
         }
@@ -58,7 +62,10 @@ namespace QuestGiver.Services.Votes
                 throw new ConflictException("There is an active vote, so a new one can not be created");
 
             // Verify that the user has access to this vote ( he is chosen for the quest )
-            Quest? voteQuest = await _repo.AllReadonly<Quest>().FirstOrDefaultAsync(x => x.Votes.Any(x => x.QuestId == model.QuestId));
+            Quest? voteQuest = await _repo.AllReadonly<Quest>()
+                .Include(x => x.FriendGroup)
+                .ThenInclude(x => x.UserFriendGroups)
+                .FirstOrDefaultAsync(x => x.Id == model.QuestId);
             
             if (voteQuest == null)
                 throw new KeyNotFoundException("No quest with specified id was found");
@@ -66,20 +73,22 @@ namespace QuestGiver.Services.Votes
             if (voteQuest.UserId != userId)
                 throw new ForbiddenException("Only the chosen user for a quest can start a vote");
 
-            Vote res = _mapper.Map<Vote>(model);
+            // Use a factory to decide whether we need a completion or a skip vote
+            Vote res = VoteFactory.Create(model, _mapper); 
             await _repo.AddAsync(res);
 
             // create UserVotes
             foreach(UserFriendGroup userInGroup in voteQuest.FriendGroup.UserFriendGroups)
             {
-                UserVote userVote = new UserVote(userInGroup.UserId, res.Id);
-                if (userInGroup.UserId == userId) // Automatically vote yes for the creator ( chosen for the quest )
-                    userVote.Decision = true;
-
-                res.UserVotes.Add(userVote);
+                res.UserVotes.Add(new UserVote
+                {
+                    UserId = userInGroup.UserId,
+                    Decision = userInGroup.UserId == userId ? true : null
+                });
             }
 
-            _repo.Update(res);
+            res.RecalculateDecision(res.UserVotes.Count);
+
             await _repo.SaveChangesAsync();
 
             return _mapper.Map<VoteDTO>(res);
@@ -93,6 +102,10 @@ namespace QuestGiver.Services.Votes
             if (userVote == null) throw new KeyNotFoundException("No UserVote with specified id was found");
 
             await _repo.ExecuteDeleteAsync<UserVote>(x => x.UserId == userId && x.VoteId == voteId);
+
+            userVote.Vote.RecalculateDecision(userVote.Vote.Quest.FriendGroup.UserFriendGroups.Count);
+
+            await _repo.SaveChangesAsync();
         }
 
         /// <inheritdoc />
@@ -100,7 +113,7 @@ namespace QuestGiver.Services.Votes
         {
             // Order by descending date created, even though at most there can be only 1 active quest
             // however there can be old history votes
-            var activeVote = await _repo.AllReadonly<Vote>().OrderByDescending(x => x.DateCreated).FirstOrDefaultAsync(x => x.QuestId == questId);
+            var activeVote = await _repo.AllReadonly<Vote>().Include(x => x.UserVotes).OrderByDescending(x => x.DateCreated).FirstOrDefaultAsync(x => x.QuestId == questId);
 
             if (activeVote == null) 
                 throw new KeyNotFoundException("No vote with specified id was found");
@@ -133,6 +146,8 @@ namespace QuestGiver.Services.Votes
             userVote.Decision = decision;
 
             _repo.Update(userVote);
+            vote.RecalculateDecision(vote.UserVotes.Count);
+
             await _repo.SaveChangesAsync();
         }
     }

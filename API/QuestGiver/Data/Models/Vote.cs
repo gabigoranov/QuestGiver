@@ -31,30 +31,32 @@ namespace QuestGiver.Data.Models
         /// </summary>
         public virtual Quest Quest { get; set; }
 
+        public bool? Decision { get; set; }
+
         /// <summary>
-        /// Dynamically calculated decision
-        /// Null if the majority has not voted yet
-        /// If the majority has voted, then take it's decision
+        /// Recalculates the vote result based on current user votes.
+        /// Should be called whenever a UserVote is added/updated.
         /// </summary>
-        [NotMapped]
-        public bool? Decision
+        public void RecalculateDecision(int totalUsers)
         {
-            get
+            var requiredMajority = (int)Math.Ceiling(totalUsers / 2.0);
+
+            var yesVotes = UserVotes.Count(v => v.Decision == true);
+            var noVotes = UserVotes.Count(v => v.Decision == false);
+
+            if (yesVotes >= requiredMajority)
             {
-                var totalUsers = Quest.FriendGroup.UserFriendGroups.Count();
-                var requiredMajority = (int)Math.Ceiling(totalUsers / 2.0);
-
-                var trueVotes = UserVotes.Count(v => v.Decision == true);
-                var falseVotes = UserVotes.Count(v => v.Decision == false);
-
-                if (trueVotes >= requiredMajority)
-                    return true;
-
-                if (falseVotes >= requiredMajority)
-                    return false;
-
-                return null;
+                Decision = true;
+                return;
             }
+
+            if (noVotes >= requiredMajority)
+            {
+                Decision = false;
+                return;
+            }
+
+            Decision = null;
         }
 
         public virtual ICollection<UserVote> UserVotes { get; set; } = new List<UserVote>();

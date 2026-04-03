@@ -288,6 +288,7 @@ namespace QuestGiver.Services.Quests
         {
             // Include navigational properties to then validate if the user trying to access the quest belongs to the friend group
             Quest? model = await _repo.AllReadonly<Quest>()
+                .Include(q => q.Votes) // include the votes so mapper knows if there is an active vote
                 .Include(x => x.FriendGroup)
                 .ThenInclude(x => x.UserFriendGroups)
                 .SingleOrDefaultAsync(x => x.FriendGroupId == groupId && x.ScheduledDate.Date == DateTime.UtcNow.Date);
