@@ -11,7 +11,7 @@ export const VotesService = {
     return res.data;
   },
   submitIndividualVote: async (voteId: string, decision: boolean) => {
-    await api.post(`${BASE_URL}/${voteId}/vote`, decision);
+    await api.post(`${BASE_URL}/${voteId}/vote`, {decision});
   },
   getQuestVote: async (questId: string): Promise<VoteDTO> => {
     const res = await api.get(`${BASE_URL}/quest/${questId}`);

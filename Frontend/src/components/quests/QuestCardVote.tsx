@@ -13,13 +13,14 @@ import {
 
 type Props = {
   vote: VoteDTO;
+  chosenUserId: string;
 };
 
 /**
  * Used in the Quest Card if a quest has an active vote
  * Displays a button to view the active vote via a dialog window
  */
-export default function QuestCardVote({ vote }: Props) {
+export default function QuestCardVote({ vote, chosenUserId }: Props) {
   return (
     <Dialog>
       {/* Trigger Button */}
@@ -37,7 +38,7 @@ export default function QuestCardVote({ vote }: Props) {
 
         <DialogDescription>{vote.description}</DialogDescription>
 
-        <VoteDetails vote={vote} />
+        <VoteDetails vote={vote} chosenUserId={chosenUserId} />
       </DialogContent>
     </Dialog>
   );

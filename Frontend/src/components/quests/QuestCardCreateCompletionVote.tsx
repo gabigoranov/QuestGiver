@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { RotateCw } from "lucide-react";
 
 import { VotesService } from "@/services/votesService";
 import type { QuestDTO } from "@/types/Receive/QuestDTO";

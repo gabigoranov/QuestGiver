@@ -87,7 +87,7 @@ export default function QuestCard({ quest, groupId }: { quest: QuestDTO, groupId
 
       {/* Action Button - if the current user is chosen */}
       {activeVote ? (
-        <QuestCardVote vote={activeVote} />
+        <QuestCardVote vote={activeVote} chosenUserId={quest.userId} />
       ) : (
         appUser?.id === quest.userId && (
           <>
