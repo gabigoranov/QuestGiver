@@ -6,6 +6,7 @@ using QuestGiver.Data.Models;
 using QuestGiver.Models.Receive;
 using QuestGiver.Models.Send;
 using QuestGiver.Services.Quests;
+using QuestGiver.Services.Votes;
 
 namespace QuestGiver.Services.Groups
 {
@@ -15,6 +16,7 @@ namespace QuestGiver.Services.Groups
         private readonly IRepository _repo;
         private readonly IMapper _mapper;
         private readonly IQuestsService _questsService;
+        private readonly IVotesService _votesService;
 
         /// <summary>
         /// DI constructor for GroupsService.
@@ -22,11 +24,13 @@ namespace QuestGiver.Services.Groups
         /// <param name="repo">Repository for accessing the db.</param>
         /// <param name="mapper">Automapper.</param>
         /// <param name="questsService">The quests service.</param>
-        public GroupsService(IRepository repo, IMapper mapper, IQuestsService questsService)
+        /// <param name="votesService">Votes service</param>
+        public GroupsService(IRepository repo, IMapper mapper, IQuestsService questsService, IVotesService votesService)
         {
             _repo = repo;
             _mapper = mapper;
             _questsService = questsService;
+            _votesService = votesService;
         }
 
         /// <inheritdoc />
@@ -49,6 +53,14 @@ namespace QuestGiver.Services.Groups
 
             await _repo.AddAsync<UserFriendGroup>(userFriendGroup); // Register the new many-to-many relationship in the database
             await _repo.SaveChangesAsync();
+
+            // Add the new user to the group's most recent active vote
+            Vote? activeVote = await _repo.AllReadonly<Vote>().OrderByDescending(x => x.DateCreated).FirstOrDefaultAsync(x => x.Quest.FriendGroupId == groupId && x.Decision == null);
+            if(activeVote != null)
+            {
+                await _votesService.CreateUserVoteAsync(activeVote.Id, userId);
+            }
+
         }
 
         /// <inheritdoc />
@@ -117,6 +129,13 @@ namespace QuestGiver.Services.Groups
 
             _repo.Delete<UserFriendGroup>(relationship);
             await _repo.SaveChangesAsync();
+
+            // Remove the user from the groups active vote
+            Vote? activeVote = await _repo.AllReadonly<Vote>().OrderByDescending(x => x.DateCreated).FirstOrDefaultAsync(x => x.Quest.FriendGroupId == groupId && x.Decision == null);
+            if (activeVote != null)
+            {
+                await _votesService.DeleteUserVoteAsync(activeVote.Id, userId);
+            }
         }
 
         

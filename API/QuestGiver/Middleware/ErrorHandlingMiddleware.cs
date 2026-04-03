@@ -1,3 +1,4 @@
+using QuestGiver.Exceptions;
 using QuestGiver.Models.Send;
 using System.Net;
 using System.Text.Json;
@@ -79,6 +80,24 @@ namespace QuestGiver.Middleware
             // Map exception type to HTTP status code and populate error details
             switch (exception)
             {
+                // 403 Forbidden - Authenticated but not allowed to access resource
+                case ForbiddenException forbiddenEx:
+                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    response.Message = forbiddenEx.Message;
+                    response.ErrorType = nameof(ForbiddenException);
+                    response.Details = "You do not have permission to access this resource.";
+                    break;
+
+                // 409 Conflict - Resource state prevents this operation (e.g. vote already decided)
+                case ConflictException conflictEx:
+                    context.Response.StatusCode = (int)HttpStatusCode.Conflict;
+                    response.StatusCode = (int)HttpStatusCode.Conflict;
+                    response.Message = conflictEx.Message;
+                    response.ErrorType = nameof(ConflictException);
+                    response.Details = "The request could not be completed due to a conflict with the current state.";
+                    break;
+
                 // 400 Bad Request - Null argument provided where value is required
                 case ArgumentNullException argNullEx:
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;

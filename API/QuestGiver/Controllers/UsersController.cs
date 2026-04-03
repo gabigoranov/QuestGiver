@@ -26,6 +26,7 @@ namespace QuestGiver.Controllers
         }
 
 
+        // Not very secure, but used for development purposes
         /// <summary>
         /// Endpoint for getting a user by their id
         /// </summary>
