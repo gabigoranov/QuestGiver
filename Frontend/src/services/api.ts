@@ -16,6 +16,9 @@ api.interceptors.request.use((config) => {
   if (config.data) {
     config.data = deepTransform(config.data);
   }
+
+  console.log("made a request");
+
   return config;
 });
 

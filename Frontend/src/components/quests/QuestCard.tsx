@@ -1,13 +1,15 @@
 import type { QuestDTO } from "@/types/Receive/QuestDTO";
-import { LucideCircleStar } from "lucide-react";
+import { LucideCircleStar, RotateCw } from "lucide-react";
 import InfoTag from "../common/InfoTag";
 import { UsersService } from "@/services/usersService";
 import { useQuery } from "@tanstack/react-query";
 import useAuth from "@/hooks/useAuth";
 import { VotesService } from "@/services/votesService";
 import QuestCardVote from "./QuestCardVote";
-import QuestCardCreateSkipVote from "./QuestCardCreateSkipVote";
-import QuestCardCreateCompletionVote from "./QuestCardCreateCompletionVote";
+import { Button } from "../ui/button";
+import { useState } from "react";
+import CreateVoteDialog from "../votes/CreateVoteDialog";
+import { VoteType } from "@/types/VoteType";
 
 /**
  * QuestCard Component
@@ -19,8 +21,16 @@ import QuestCardCreateCompletionVote from "./QuestCardCreateCompletionVote";
  *
  * @export
  */
-export default function QuestCard({ quest, groupId }: { quest: QuestDTO, groupId: string }) {
+export default function QuestCard({
+  quest,
+  groupId,
+}: {
+  quest: QuestDTO;
+  groupId: string;
+}) {
   const { user: appUser } = useAuth();
+  const [isCompletionVoteOpen, setIsCompletionVoteOpen] = useState(false);
+  const [isSkipVoteOpen, setIsSkipVoteOpen] = useState(false);
 
   // Load the current user for the group
   const { isPending: isUserPending, data: chosenUser } = useQuery({
@@ -34,8 +44,6 @@ export default function QuestCard({ quest, groupId }: { quest: QuestDTO, groupId
     queryFn: () => VotesService.getQuestVote(quest.id),
     enabled: !!quest.hasActiveVote,
   });
-
-
 
   return (
     <div className="bg-card rounded-2xl p-6 w-full max-w-sm shadow-glow-soft flex flex-col gap-4">
@@ -89,9 +97,37 @@ export default function QuestCard({ quest, groupId }: { quest: QuestDTO, groupId
       ) : (
         appUser?.id === quest.userId && (
           <>
-            <QuestCardCreateCompletionVote quest={quest} groupId={groupId} />
+            <Button
+              onClick={() => setIsCompletionVoteOpen(true)}
+              className="text-xl py-8 rounded-full font-bold shadow-glow-primary flex items-center gap-3"
+            >
+              Upload Evidence
+            </Button>
 
-            <QuestCardCreateSkipVote quest={quest} groupId={groupId} />
+            {/* Dialog for completion vote */}
+            <CreateVoteDialog
+              quest={quest}
+              groupId={groupId}
+              voteType={VoteType.CompletionVote}
+              isOpen={isCompletionVoteOpen}
+              setIsOpen={setIsCompletionVoteOpen}
+            ></CreateVoteDialog>
+
+            <Button
+              variant="ghost"
+              className="text-sm py-2 rounded-full uppercase font-semibold tracking-wider mt-2 flex items-center gap-3 text-muted-foreground"
+            >
+              <RotateCw size={16} />
+              Skip Quest (Vote Required)
+            </Button>
+
+            <CreateVoteDialog
+              quest={quest}
+              groupId={groupId}
+              voteType={VoteType.SkipVote}
+              isOpen={isSkipVoteOpen}
+              setIsOpen={setIsSkipVoteOpen}
+            ></CreateVoteDialog>
           </>
         )
       )}
