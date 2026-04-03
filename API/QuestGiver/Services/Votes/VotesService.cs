@@ -43,7 +43,7 @@ namespace QuestGiver.Services.Votes
 
             UserVote res = new UserVote() { 
                 UserId = userId,
-                Vote = vote
+                VoteId = voteId
             };
 
             await _repo.AddAsync(res);
@@ -97,13 +97,22 @@ namespace QuestGiver.Services.Votes
         /// <inheritdoc />
         public async Task DeleteUserVoteAsync(Guid voteId, Guid userId)
         {
-            UserVote? userVote = await _repo.All<UserVote>().FirstOrDefaultAsync(x => x.UserId == userId && x.VoteId == voteId);
+            UserVote? userVote = await _repo.All<UserVote>()
+                .Include(x => x.Vote)
+                    .ThenInclude(v => v.Quest)
+                        .ThenInclude(q => q.FriendGroup)
+                            .ThenInclude(fg => fg.UserFriendGroups)
+                .FirstOrDefaultAsync(x => x.UserId == userId && x.VoteId == voteId);
 
-            if (userVote == null) throw new KeyNotFoundException("No UserVote with specified id was found");
+            if (userVote == null)
+                throw new KeyNotFoundException("No UserVote with specified id was found");
 
-            await _repo.ExecuteDeleteAsync<UserVote>(x => x.UserId == userId && x.VoteId == voteId);
+            // Remove via tracked entity
+            _repo.Delete(userVote);
 
-            userVote.Vote.RecalculateDecision(userVote.Vote.Quest.FriendGroup.UserFriendGroups.Count);
+            // Recalculate after deletion
+            int memberCount = userVote.Vote.Quest.FriendGroup.UserFriendGroups.Count;
+            userVote.Vote.RecalculateDecision(memberCount);
 
             await _repo.SaveChangesAsync();
         }

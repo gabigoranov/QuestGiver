@@ -43,6 +43,11 @@ namespace QuestGiver.Controllers
 
 
 
+        /// <summary>
+        /// Gets a group by its id
+        /// </summary>
+        /// <param name="groupId">The id of the group</param>
+        /// <returns>A groupDTO</returns>
         [HttpGet("{groupId}")]
         public async Task<IActionResult> GetById([FromRoute] Guid groupId)
         {
@@ -50,6 +55,22 @@ namespace QuestGiver.Controllers
             Guid userId = User.GetUserId();
             GroupDTO groupDetails = await _groupsService.GetGroupByIdAsync(groupId, userId);
             return Ok(groupDetails);
+        }
+
+        /// <summary>
+        /// Gets the members of a group if the request user belongs to it
+        /// </summary>
+        /// <param name="groupId">The id of the group</param>
+        /// <returns>a collection of UserDTOs</returns>
+        [HttpGet("{groupId}/members")]
+        public async Task<IActionResult> GetGroupMembers([FromRoute] Guid groupId)
+        {
+            // Load userId from JWT token
+            Guid userId = User.GetUserId();
+
+            List<UserDTO> members = await _groupsService.GetGroupMembersAsync(groupId, userId);
+
+            return Ok(members);
         }
 
         /// <summary>

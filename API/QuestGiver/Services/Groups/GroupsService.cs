@@ -104,6 +104,20 @@ namespace QuestGiver.Services.Groups
             return _mapper.Map<GroupDTO>(group);
         }
 
+        /// <inheritdoc />
+        public async Task<List<UserDTO>> GetGroupMembersAsync(Guid groupId, Guid userId)
+        {
+            List<User> groupMembers = await _repo.AllReadonly<User>()
+                .Include(x => x.UserFriendGroups)
+                .Where(x => x.UserFriendGroups.Any(fg => fg.FriendGroupId == groupId))
+                .ToListAsync();
+
+            if (!groupMembers.Any(x => x.Id == userId))
+                throw new KeyNotFoundException("No group with specified id was found"); // hide the existence
+
+            return _mapper.Map<List<UserDTO>>(groupMembers);
+        }
+
         /// <inheritdoc/>
         public async Task<List<GroupDTO>> GetGroupsForUserAsync(Guid userId)
         {
@@ -112,8 +126,8 @@ namespace QuestGiver.Services.Groups
                 .Include(g => g.Quests)
                 .Where(g => g.UserFriendGroups.Any(ufg => ufg.UserId == userId)).ToListAsync();
 
-            if(groups.Count == 0)
-                throw new KeyNotFoundException("Invalid userId or no groups found for the user.");
+            if (groups.Count == 0)
+                return [];
 
             return _mapper.Map<List<GroupDTO>>(groups);
         }

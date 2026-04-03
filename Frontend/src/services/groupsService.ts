@@ -2,6 +2,7 @@ import type { AuthResponse } from "@/types/Receive/AuthResponse";
 import { api } from "./api";
 import type { GroupDTO } from "@/types/Receive/GroupDTO";
 import type { CreateGroupDTO } from "@/pages/CreateGroup";
+import type { UserDTO } from "@/types/Receive/UserDTO";
 
 const BASE_URL = "/groups";
 
@@ -13,6 +14,10 @@ export const GroupsService = {
   },
   getGroupById: async (groupId: string): Promise<GroupDTO> => {
     const res = await api.get(`${BASE_URL}/${groupId}`);
+    return res.data;
+  },
+  getGroupMembers: async (groupId: string): Promise<UserDTO[]> => {
+    const res = await api.get(`${BASE_URL}/${groupId}/members`);
     return res.data;
   },
   create: async (data: CreateGroupDTO): Promise<GroupDTO> => {

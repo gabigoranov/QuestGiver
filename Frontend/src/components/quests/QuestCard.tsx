@@ -28,8 +28,6 @@ export default function QuestCard({ quest, groupId }: { quest: QuestDTO, groupId
     queryFn: () => UsersService.getById(quest!.userId!),
   });
 
-  console.log(quest);
-
   // Load the current vote for the quest ( there could not be one )
   const { data: activeVote } = useQuery({
     queryKey: ["vote", quest.id, "quest-vote"],
