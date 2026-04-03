@@ -46,5 +46,16 @@ namespace QuestGiver.Services.Groups
         /// <param name="userId">The user id</param>
         /// <returns>A group dto</returns>
         Task<GroupDTO> GetGroupByIdAsync(Guid groupId, Guid userId);
+
+        /// <summary>
+        /// Returns all the users who belong to a group
+        /// </summary>
+        /// <remarks>
+        /// To access them, the user needs to also belong to the group
+        /// </remarks>
+        /// <param name="groupId">The id of the group</param>
+        /// <param name="userId">The id of the user</param>
+        /// <returns>A collection of user dtos</returns>
+        Task<List<UserDTO>> GetGroupMembersAsync(Guid groupId, Guid userId);
     }
 }

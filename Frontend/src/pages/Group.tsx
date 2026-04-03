@@ -1,6 +1,7 @@
 import BottomSheet from "@/components/common/BottomSheet";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
 import LoadingScreen from "@/components/common/LoadingScreen";
+import MembersList from "@/components/groups/MembersList";
 import QuestCard from "@/components/quests/QuestCard";
 import QuestCardFallback from "@/components/quests/QuestCardFallback";
 import { QuestTimer } from "@/components/quests/QuestTimer";
@@ -20,6 +21,8 @@ import { useParams } from "react-router-dom";
  */
 export default function Group() {
   const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [isMembersOpen, setIsMembersOpen] = useState(false);
+
   // Load groupId from params
   const { groupId } = useParams<{ groupId: string }>();
   const { isPending, isError, error } = useQuery({
@@ -72,6 +75,7 @@ export default function Group() {
         {/* View Members (Secondary) */}
         <Button
           variant="outline"
+          onClick={() => setIsMembersOpen(true)}
           className="flex-1 rounded-2xl h-12 flex items-center justify-center gap-2 uppercase text-md tracking-wider font-semibold"
         >
           Members
@@ -86,7 +90,7 @@ export default function Group() {
 
           <div className="flex items-center justify-between gap-3 bg-muted/50 border border-border rounded-xl px-4 py-3">
             <span className="text-sm text-muted-foreground truncate">
-              {window.location.toString()}/group/join/{groupId}
+              {window.origin.toString()}/group/join/{groupId}
             </span>
 
             <Button
@@ -95,7 +99,7 @@ export default function Group() {
               className="rounded-full px-3"
               onClick={() => {
                 navigator.clipboard.writeText(
-                  `https://questbound/group/join/${groupId}`,
+                  `${window.origin.toString()}/group/join/${groupId}`,
                 );
 
                 setIsInviteOpen(false);
@@ -105,6 +109,11 @@ export default function Group() {
             </Button>
           </div>
         </div>
+      </BottomSheet>
+
+      {/* Bottom sheets for viewing group members */}
+      <BottomSheet isOpen={isMembersOpen} onClose={() => setIsMembersOpen(false)}>
+        <MembersList groupId={groupId!}/>
       </BottomSheet>
     </section>
   );
