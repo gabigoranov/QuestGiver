@@ -1,5 +1,5 @@
 import type { QuestDTO } from "@/types/Receive/QuestDTO";
-import { LucideCircleStar } from "lucide-react";
+import { LucideCircleStar, RotateCw } from "lucide-react";
 import { Button } from "../ui/button";
 import InfoTag from "../common/InfoTag";
 import { UsersService } from "@/services/usersService";
@@ -73,9 +73,20 @@ export default function QuestCard({ quest }: { quest: QuestDTO }) {
 
       {/* Action Button - if the current user is chosen */}
       {appUser?.id === quest.userId && (
-        <Button className="text-xl py-8 rounded-full font-bold shadow-glow-primary">
-          Upload Evidence
-        </Button>
+        <>
+          <Button className="text-xl py-8 rounded-full font-bold shadow-glow-primary">
+            Upload Evidence
+          </Button>
+
+          {/* Skip button */}
+          <Button
+            variant="ghost"
+            className="text-sm py-2 rounded-full uppercase font-semibold tracking-wider mt-2 flex items-center gap-3 text-muted-foreground"
+          >
+            <RotateCw size={16} />
+            Skip Quest (Vote Required)
+          </Button>
+        </>
       )}
     </div>
   );

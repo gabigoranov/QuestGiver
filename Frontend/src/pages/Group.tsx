@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { GroupsService } from "@/services/groupsService";
 import { QuestsService } from "@/services/questsService";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, RotateCw } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -56,14 +56,7 @@ export default function Group() {
           <QuestCard quest={quest!} />
         </div>
 
-        {/* Skip button */}
-        <Button
-          variant="ghost"
-          className="text-sm py-2 rounded-full uppercase font-semibold tracking-wider -mt-2 flex items-center gap-3 text-muted-foreground"
-        >
-          <RotateCw size={16} />
-          Skip Quest (Vote Required)
-        </Button>
+        
       </ErrorBoundary>
 
       {/* Controls - Invite Users, Manage Members */}
