@@ -24,6 +24,10 @@ export default function FriendGroupCard(data: GroupDTO) {
       title: t("groups.card.completed"),
       colorVariant: "success",
     },
+    [QuestStatusType.Skipped]: {
+      title: t("groups.card.skipped"),
+      colorVariant: "secondary",
+    },
     [QuestStatusType.New]: {
       title: t("groups.card.new"),
       colorVariant: "tertiary",

@@ -13,8 +13,11 @@ export const VotesService = {
   submitIndividualVote: async (voteId: string, decision: boolean) => {
     await api.post(`${BASE_URL}/${voteId}/vote`, {decision});
   },
-  getQuestVote: async (questId: string): Promise<VoteDTO> => {
+  getQuestVote: async (questId: string): Promise<VoteDTO | null> => {
     const res = await api.get(`${BASE_URL}/quest/${questId}`);
+
+    console.log(res.data);
+
     return res.data;
   },
 };

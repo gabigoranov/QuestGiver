@@ -1,8 +1,6 @@
-import { useTranslation } from "react-i18next";
 
 export default function Home() {
-  const { t } = useTranslation();
   return (
-    <div>{t('home.title')}</div>
+    <div className="flex items-center justify-center"></div>
   )
 }

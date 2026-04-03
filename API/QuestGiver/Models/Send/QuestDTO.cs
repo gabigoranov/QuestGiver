@@ -1,4 +1,5 @@
-﻿using QuestGiver.Data.Models;
+﻿using QuestGiver.Data.Common;
+using QuestGiver.Data.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -23,6 +24,8 @@ namespace QuestGiver.Models.Send
 
         [NotMapped]
         public bool IsCompleted => DateCompleted.HasValue; // Runtime calculated completion flag
+
+        public QuestStatusType Status { get; set; }
 
         public bool HasActiveVote { get; set; } = false;
 

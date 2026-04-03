@@ -1,5 +1,10 @@
 import type { QuestDTO } from "@/types/Receive/QuestDTO";
-import { LucideCircleStar, RotateCw } from "lucide-react";
+import {
+  LucideCircleStar,
+  RotateCw,
+  CheckCircle2,
+  SkipForward,
+} from "lucide-react";
 import InfoTag from "../common/InfoTag";
 import { UsersService } from "@/services/usersService";
 import { useQuery } from "@tanstack/react-query";
@@ -10,53 +15,100 @@ import { Button } from "../ui/button";
 import { useState } from "react";
 import CreateVoteDialog from "../votes/CreateVoteDialog";
 import { VoteType } from "@/types/VoteType";
+import { QuestStatusType } from "@/types/Receive/QuestStatusType";
+
+type Props = {
+  quest: QuestDTO;
+  groupId: string;
+};
 
 /**
  * QuestCard Component
- * Displays today's quest information, XP reward, chosen user, and action button.
  *
- * @param {Object} props
- * @param {QuestDTO} props.quest - The quest data to display
+ * Displays information about a daily quest, including:
+ * - Title, description, and reward
+ * - Assigned (chosen) user
+ * - Active vote (if any)
+ * - Action buttons for the chosen user
+ *
+ * Behavior:
+ * - If the quest is Completed or Skipped:
+ *   - Action buttons are hidden
+ *   - A status InfoTag is displayed
+ * - If there is an active vote:
+ *   - Displays the vote dialog trigger instead of actions
+ * - Only the chosen user can initiate votes
+ *
+ * @param {Props} props - Component props
  * @returns JSX.Element
- *
- * @export
  */
-export default function QuestCard({
-  quest,
-  groupId,
-}: {
-  quest: QuestDTO;
-  groupId: string;
-}) {
+export default function QuestCard({ quest, groupId }: Props) {
+  console.log("status:", quest.status, typeof quest.status);
+  console.log("Skipped enum:", QuestStatusType.Skipped);
+
   const { user: appUser } = useAuth();
+
   const [isCompletionVoteOpen, setIsCompletionVoteOpen] = useState(false);
   const [isSkipVoteOpen, setIsSkipVoteOpen] = useState(false);
 
-  // Load the current user for the group
+  /**
+   * Determines whether the quest is already finished.
+   * Used to disable actions and show status.
+   */
+  const isDone =
+    quest.status === QuestStatusType.Completed ||
+    quest.status === QuestStatusType.Skipped;
+
+  /**
+   * Fetch the chosen user for this quest
+   */
   const { isPending: isUserPending, data: chosenUser } = useQuery({
     queryKey: ["user", quest!.userId, "chosenUser"],
     queryFn: () => UsersService.getById(quest!.userId!),
   });
 
-  // Load the current vote for the quest ( there could not be one )
+  /**
+   * Fetch the active vote for the quest (if one exists)
+   */
   const { data: activeVote } = useQuery({
     queryKey: ["vote", quest.id, "quest-vote"],
     queryFn: () => VotesService.getQuestVote(quest.id),
-    enabled: !!quest.hasActiveVote,
   });
 
   return (
     <div className="bg-card rounded-2xl p-6 w-full max-w-sm shadow-glow-soft flex flex-col gap-4">
-      {/* Header: Today's quest label + XP */}
+      {/* Header: Label + XP + Status */}
       <div className="flex justify-between items-center mb-4">
         <span className="text-xs text-primary uppercase tracking-widest font-semibold">
           Today's Quest
         </span>
-        <InfoTag
-          title={`${quest.rewardPoints} XP`}
-          icon={<LucideCircleStar size={16} />}
-          colorVariant="tertiary"
-        />
+
+        <div className="flex items-stretch gap-2">
+          {/* XP Reward */}
+          <InfoTag
+            title={`${quest.rewardPoints} XP`}
+            icon={<LucideCircleStar size={16} />}
+            colorVariant="tertiary"
+          />
+
+          {/* Status Tag (shown only when quest is done) */}
+          {isDone && (
+            <InfoTag
+              icon={
+                quest.status === QuestStatusType.Completed ? (
+                  <CheckCircle2 size={16} />
+                ) : (
+                  <SkipForward size={16} />
+                )
+              }
+              colorVariant={
+                quest.status === QuestStatusType.Completed
+                  ? "success"
+                  : "primary"
+              }
+            />
+          )}
+        </div>
       </div>
 
       {/* Quest Title */}
@@ -91,12 +143,22 @@ export default function QuestCard({
         </span>
       </div>
 
-      {/* Action Button - if the current user is chosen */}
+      {/* Actions / Vote Section */}
       {activeVote ? (
+        /**
+         * If a vote is active, show the vote dialog trigger
+         */
         <QuestCardVote vote={activeVote} chosenUserId={quest.userId} />
       ) : (
+        /**
+         * Otherwise, show action buttons only if:
+         * - Quest is NOT done
+         * - Current user is the chosen user
+         */
+        !isDone &&
         appUser?.id === quest.userId && (
           <>
+            {/* Completion Vote Button */}
             <Button
               onClick={() => setIsCompletionVoteOpen(true)}
               className="text-xl py-8 rounded-full font-bold shadow-glow-primary flex items-center gap-3"
@@ -104,16 +166,18 @@ export default function QuestCard({
               Upload Evidence
             </Button>
 
-            {/* Dialog for completion vote */}
+            {/* Completion Vote Dialog */}
             <CreateVoteDialog
               quest={quest}
               groupId={groupId}
               voteType={VoteType.CompletionVote}
               isOpen={isCompletionVoteOpen}
               setIsOpen={setIsCompletionVoteOpen}
-            ></CreateVoteDialog>
+            />
 
+            {/* Skip Vote Button */}
             <Button
+              onClick={() => setIsSkipVoteOpen(true)}
               variant="ghost"
               className="text-sm py-2 rounded-full uppercase font-semibold tracking-wider mt-2 flex items-center gap-3 text-muted-foreground"
             >
@@ -121,13 +185,14 @@ export default function QuestCard({
               Skip Quest (Vote Required)
             </Button>
 
+            {/* Skip Vote Dialog */}
             <CreateVoteDialog
               quest={quest}
               groupId={groupId}
               voteType={VoteType.SkipVote}
               isOpen={isSkipVoteOpen}
               setIsOpen={setIsSkipVoteOpen}
-            ></CreateVoteDialog>
+            />
           </>
         )
       )}

@@ -5,6 +5,7 @@ using QuestGiver.Data.Models;
 using QuestGiver.Exceptions;
 using QuestGiver.Models.Receive;
 using QuestGiver.Models.Send;
+using QuestGiver.Services.Quests;
 
 namespace QuestGiver.Services.Votes
 {
@@ -12,6 +13,7 @@ namespace QuestGiver.Services.Votes
     public class VotesService : IVotesService
     {
         private readonly IRepository _repo;
+        private readonly IQuestsService _questsService;
         private readonly IMapper _mapper;
 
         /// <summary>
@@ -19,10 +21,12 @@ namespace QuestGiver.Services.Votes
         /// </summary>
         /// <param name="repo">The db repository</param>
         /// <param name="mapper">Automapper</param>
-        public VotesService(IRepository repo, IMapper mapper)
+        /// <param name="questsService">The questsService</param>
+        public VotesService(IRepository repo, IMapper mapper, IQuestsService questsService)
         {
             _repo = repo;
             _mapper = mapper;
+            _questsService = questsService;
         }
 
         /// <inheritdoc />
@@ -89,6 +93,19 @@ namespace QuestGiver.Services.Votes
 
             res.RecalculateDecision(res.UserVotes.Count);
 
+            // Update vote quest status
+            if (res.Decision == true)
+            {
+                if (res.Discriminator == VoteType.CompletionVote)
+                {
+                    await _questsService.CompleteQuestAsync(res.QuestId, userId);
+                }
+                else if (res.Discriminator == VoteType.SkipVote)
+                {
+                    await _questsService.SkipQuestAsync(res.QuestId, userId);
+                }
+            }
+
             await _repo.SaveChangesAsync();
 
             return _mapper.Map<VoteDTO>(res);
@@ -118,14 +135,14 @@ namespace QuestGiver.Services.Votes
         }
 
         /// <inheritdoc />
-        public async Task<VoteDTO> GetLatestQuestVoteAsync(Guid questId, Guid userId)
+        public async Task<VoteDTO?> GetLatestQuestVoteAsync(Guid questId, Guid userId)
         {
             // Order by descending date created, even though at most there can be only 1 active quest
             // however there can be old history votes
-            var activeVote = await _repo.AllReadonly<Vote>().Include(x => x.UserVotes).OrderByDescending(x => x.DateCreated).FirstOrDefaultAsync(x => x.QuestId == questId);
+            var activeVote = await _repo.AllReadonly<Vote>().Include(x => x.UserVotes).OrderByDescending(x => x.DateCreated).FirstOrDefaultAsync(x => x.QuestId == questId && x.Decision == null);
 
-            if (activeVote == null) 
-                throw new KeyNotFoundException("No vote with specified id was found");
+            if (activeVote == null)
+                return null;
 
             if (!activeVote.UserVotes.Any(x => x.UserId == userId))
                 throw new KeyNotFoundException("No vote with the specified id was found"); // Hide the existence from the user
@@ -137,12 +154,12 @@ namespace QuestGiver.Services.Votes
         /// <inheritdoc />
         public async Task SubmitIndividualVoteAsync(Guid voteId, Guid userId, bool decision)
         {
-            Vote? vote = await _repo.All<Vote>().Include(x => x.UserVotes).SingleOrDefaultAsync(v => v.Id == voteId);
+            Vote? vote = await _repo.All<Vote>().Include(x => x.Quest).Include(x => x.UserVotes).SingleOrDefaultAsync(v => v.Id == voteId);
 
             if (vote == null)
                 throw new KeyNotFoundException("No vote with specified id was found");
 
-            // if the user has a decision already, then deny
+            // if the vote has a decision already, then deny
             if (vote.Decision != null)
                 throw new ConflictException("The vote has already been decided");
 
@@ -156,6 +173,20 @@ namespace QuestGiver.Services.Votes
 
             _repo.Update(userVote);
             vote.RecalculateDecision(vote.UserVotes.Count);
+
+            // Update vote quest status
+            if(vote.Decision == true)
+            {
+                if(vote.Discriminator == VoteType.CompletionVote)
+                {
+                    await _questsService.CompleteQuestAsync(vote.QuestId, vote.Quest.UserId);
+                }
+                else if(vote.Discriminator == VoteType.SkipVote)
+                {
+                    await _questsService.SkipQuestAsync(vote.QuestId, vote.Quest.UserId);
+                }
+            }
+            _repo.Update(vote);
 
             await _repo.SaveChangesAsync();
         }

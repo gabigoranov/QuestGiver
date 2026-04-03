@@ -5,6 +5,7 @@
     {
         InProgress = 0,
         Completed = 1,
+        Skipped = 2,
         New = 3
     }
 }

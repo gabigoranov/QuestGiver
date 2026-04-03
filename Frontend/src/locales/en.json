@@ -131,7 +131,8 @@
       "members": "Members",
       "enterGroup": "Enter Group",
       "new": "New Quest",
-      "completed": "Finished"
+      "completed": "Finished",
+      "skipped": "Skipped"
     },
     "create": {
       "title": "Create a Friend Group",

@@ -1,3 +1,5 @@
+import type { QuestStatusType } from "./QuestStatusType";
+
 export type QuestDTO = {
   id: string; 
   title: string; 
@@ -9,4 +11,5 @@ export type QuestDTO = {
   rewardPoints: number;
   userId: string; 
   hasActiveVote: boolean;
+  status: QuestStatusType
 };

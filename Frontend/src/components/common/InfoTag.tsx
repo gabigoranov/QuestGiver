@@ -1,5 +1,5 @@
 type InfoTagProps = {
-  title: string;
+  title?: string;
   colorVariant?: "primary" | "secondary" | "tertiary" | "success" | "error";
   icon?: React.ReactNode;
 };
@@ -11,9 +11,9 @@ const colorVariants = {
     text: "text-primary",
   },
   secondary: {
-    bg: "bg-secondary/15",
-    border: "border-secondary/30",
-    text: "text-secondary",
+    bg: "bg-muted/15",
+    border: "border-border",
+    text: "text-muted-foreground",
   },
   tertiary: {
     bg: "bg-tertiary/15",
@@ -44,7 +44,7 @@ export default function InfoTag({
       className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border ${bg} ${border} ${text} text-sm font-medium`}
     >
       {icon && <span className="flex items-center justify-center">{icon}</span>}
-      <span className="uppercase tracking-wide">{title}</span>
+      {title && <span className="uppercase tracking-wide">{title}</span>}
     </div>
   );
 }

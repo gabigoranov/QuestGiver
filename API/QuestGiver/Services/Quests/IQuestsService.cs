@@ -34,6 +34,14 @@ namespace QuestGiver.Services.Quests
         public Task<QuestDTO> CompleteQuestAsync(Guid questId, Guid userId);
 
         /// <summary>
+        /// Marks a quest as skipped for a given user and updates the quest queue for the associated friend group. It also returns the updated QuestDTO reflecting the completion status.
+        /// </summary>
+        /// <param name="questId">The quest id.</param>
+        /// <param name="userId">The user id.</param>
+        /// <returns>The updated questDTO.</returns>
+        public Task<QuestDTO> SkipQuestAsync(Guid questId, Guid userId);
+
+        /// <summary>
         /// Updates the flag
         /// </summary>
         /// <param name="groupId">The group that is being updated</param>

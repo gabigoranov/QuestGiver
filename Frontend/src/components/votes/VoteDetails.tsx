@@ -67,7 +67,7 @@ export default function VoteActions({ vote, chosenUserId }: VoteActionsProps) {
       )}
 
       {/* Voting buttons ( the user can revote if they wish ) */}
-      {user!.id !== chosenUserId && (
+      {(user!.id !== chosenUserId && vote.decision == null) && (
         <div className="flex flex-col gap-2 mt-2">
           <Button
             onClick={() => handleVote(true)}

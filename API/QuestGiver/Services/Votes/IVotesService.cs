@@ -14,7 +14,7 @@ namespace QuestGiver.Services.Votes
         /// <param name="questId">The id of the quest</param>
         /// <param name="userId">The id of the user, used for auth</param>
         /// <returns>A completion vote or skip vote</returns>
-        Task<VoteDTO> GetLatestQuestVoteAsync(Guid questId, Guid userId);
+        Task<VoteDTO?> GetLatestQuestVoteAsync(Guid questId, Guid userId);
 
         /// <summary>
         /// Creates a new vote for a specified quest

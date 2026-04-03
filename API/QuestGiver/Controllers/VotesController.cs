@@ -42,7 +42,7 @@ namespace QuestGiver.Controllers
             // Load userId from JWT token
             Guid userId = User.GetUserId();
 
-            VoteDTO activeVote = await _votesService.GetLatestQuestVoteAsync(questId, userId);
+            VoteDTO? activeVote = await _votesService.GetLatestQuestVoteAsync(questId, userId);
 
             return Ok(activeVote);
         }

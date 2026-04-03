@@ -395,5 +395,34 @@ namespace QuestGiver.Services.Quests
             _repo.Update(group);
             await _repo.SaveChangesAsync();
         }
+
+        /// <inheritdoc />
+        public async Task<QuestDTO> SkipQuestAsync(Guid questId, Guid userId)
+        {
+            Quest? quest = await _repo.All<Quest>()
+                .FirstOrDefaultAsync(q => q.Id == questId && q.UserId == userId);
+
+            if (quest == null)
+                throw new KeyNotFoundException("Quest not found.");
+
+            if (quest.UserId != userId)
+                throw new UnauthorizedAccessException("User is not assigned to this quest.");
+
+            quest.Status = QuestStatusType.Skipped;
+            await _repo.SaveChangesAsync();
+
+            try
+            {
+                // Has it's own SaveChangesAsync if it is completed successfully
+                await GenerateQuestsForGroupAsync(quest.FriendGroupId, CalculateNeededQuestsCount(quest.FriendGroupId));
+            }
+            catch
+            {
+                // Retry once, if it fails again we move on
+                await GenerateQuestsForGroupAsync(quest.FriendGroupId, CalculateNeededQuestsCount(quest.FriendGroupId));
+            }
+
+            return _mapper.Map<QuestDTO>(quest);
+        }
     }
 }
