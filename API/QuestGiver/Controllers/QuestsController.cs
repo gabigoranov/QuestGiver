@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using QuestGiver.Extensions;
 using QuestGiver.Models.Send;
 using QuestGiver.Services.Quests;
+using System.Text.RegularExpressions;
 
 namespace QuestGiver.Controllers
 {
@@ -42,6 +43,21 @@ namespace QuestGiver.Controllers
             QuestDTO quest = await _questsService.GetCurrentQuestForGroupAsync(groupId, userId);
 
             return Ok(quest);
+        }
+
+        /// <summary>
+        /// Loads the authenticated user's own quest history ( all of their quests )
+        /// </summary>
+        /// <returns>A list of quests</returns>
+        [HttpGet("history")]
+        public async Task<IActionResult> GetUserQuestHistory()
+        {
+            // Load userId from JWT token
+            Guid userId = User.GetUserId();
+
+            List<QuestDTO> quests = await _questsService.GetAllUserQuests(userId);
+
+            return Ok(quests);
         }
 
         /// <summary>

@@ -9,5 +9,8 @@ export const QuestsService = {
     const res = await api.get(`${BASE_URL}/group/${groupid}`);
     return res.data;
   },
-  
+  getAllUserQuests: async (): Promise<QuestDTO[]> => {
+    const res = await api.get(`${BASE_URL}/history`);
+    return res.data;
+  },
 };
