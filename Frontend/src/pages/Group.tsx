@@ -53,7 +53,7 @@ export default function Group() {
       <ErrorBoundary fallback={<QuestCardFallback />}>
         {/* Quest Card */}
         <div className="flex flex-row items-center justify-center">
-          <QuestCard quest={quest!} />
+          <QuestCard quest={quest!} groupId={groupId!}/>
         </div>
 
         

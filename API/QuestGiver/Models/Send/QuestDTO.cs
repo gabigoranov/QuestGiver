@@ -24,6 +24,8 @@ namespace QuestGiver.Models.Send
         [NotMapped]
         public bool IsCompleted => DateCompleted.HasValue; // Runtime calculated completion flag
 
+        public bool HasActiveVote { get; set; } = false;
+
         [Required]
         public int RewardPoints { get; set; }
 
