@@ -75,10 +75,10 @@ export default function QuestCardCreateCompletionVote({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-md" showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
+          <DialogTitle className="text-3xl text-center font-semibold">
             Start a Vote
           </DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground mt-1">
+          <DialogDescription className="text-md text-center text-muted-foreground mt-1">
             Initiate a squad consensus for the current quest.
           </DialogDescription>
         </DialogHeader>
