@@ -1,6 +1,7 @@
 import type { UserDTO } from "@/types/Receive/UserDTO";
 import { User } from "lucide-react"; // Default user icon
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useTranslation } from "react-i18next";
 
 type UserCardProps = {
   user: UserDTO;
@@ -20,6 +21,7 @@ type UserCardProps = {
  * @returns JSX.Element
  */
 export default function UserCard({ user, highlight = false }: UserCardProps) {
+  const { t } = useTranslation();
   return (
     <div
       className={`flex items-center gap-4 p-3 rounded-lg border ${
@@ -44,7 +46,7 @@ export default function UserCard({ user, highlight = false }: UserCardProps) {
 
         {/* Description snippet */}
         <span className="text-sm text-muted-foreground truncate w-45">
-          {user.description || "No description provided."}
+          {user.description || t("profile.noDescription")}
         </span>
       </div>
 

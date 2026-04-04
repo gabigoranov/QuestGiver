@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { QuestsService } from "@/services/questsService";
 import StaticQuestCard from "@/components/quests/StaticQuestCard";
 import { UsersService } from "@/services/usersService";
 
 export default function Profile() {
+  const { t } = useTranslation();
   const {data:user, isLoading } = useQuery({
     queryKey: ["me"],
     queryFn: UsersService.reloadSelf,
@@ -16,7 +18,7 @@ export default function Profile() {
   });
 
   if (isLoading || user == null) {
-    return <div className="p-6 text-white">Loading...</div>;
+    return <div className="p-6 text-white">{t("profile.loading")}</div>;
   }
   const progress = (user.experiencePoints / user.nextLevelExperience) * 100;
 
@@ -37,7 +39,7 @@ export default function Profile() {
         <div>
           <h1 className="text-xl font-semibold">@{user.username}</h1>
           <p className="text-sm mt-2 text-muted-foreground max-w-xs">
-            {user.description || "No description provided."}
+            {user.description || t("profile.noDescription")}
           </p>
         </div>
       </div>
@@ -45,11 +47,11 @@ export default function Profile() {
       {/* PROGRESS CARD */}
       <div className="w-full max-w-md bg-card backdrop-blur rounded-2xl p-5 border border-border flex flex-col gap-4 shadow-glow-soft">
         <span className="text-xs text-tertiary uppercase tracking-wider font-semibold">
-          Current Status
+          {t("profile.currentStatus")}
         </span>
 
         <div className="flex justify-between items-center font-bold">
-          <span className="text-lg">Progress to Level {user.level + 1}</span>
+          <span className="text-lg">{t("profile.progressToLevel")}{user.level + 1}</span>
           <span className="text-sm font-semibold">{Math.floor(progress)}%</span>
         </div>
 
@@ -68,13 +70,13 @@ export default function Profile() {
 
       {/* QUEST HISTORY */}
       <div className="w-full max-w-md flex flex-col gap-4">
-        <h2 className="text-lg font-semibold font-heading">Quest History</h2>
+        <h2 className="text-lg font-semibold font-heading">{t("profile.questHistory")}</h2>
 
         {/* QUEST ITEMS */}
         {!data ? (
-          <div className="text-muted-foreground text-sm">Loading quests...</div>
+          <div className="text-muted-foreground text-sm">{t("profile.loadingQuests")}</div>
         ) : data.length === 0 ? (
-          <div className="text-muted-foreground text-sm">No quests yet.</div>
+          <div className="text-muted-foreground text-sm">{t("profile.noQuests")}</div>
         ) : (
           data.map((quest) => <StaticQuestCard key={quest.id} quest={quest} />)
         )}

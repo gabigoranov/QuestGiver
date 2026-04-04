@@ -148,5 +148,134 @@
   "logo": "QuestBound",
   "home": {
     "title": "Home"
+  },
+  "profile": {
+    "loading": "Loading...",
+    "noDescription": "No description provided.",
+    "currentStatus": "Current Status",
+    "progressToLevel": "Progress to Level ",
+    "questHistory": "Quest History",
+    "loadingQuests": "Loading quests...",
+    "noQuests": "No quests yet."
+  },
+  "group": {
+    "invite": "Invite",
+    "members": "Members",
+    "inviteLink": "Invite Link",
+    "copy": "Copy"
+  },
+  "guide": {
+    "formCircle": {
+      "title": "Form Your Circle",
+      "description": "True legends never walk alone. Gather up to 6 of your closest allies to form a private guild."
+    },
+    "dailyChoice": {
+      "title": "The Daily Choice",
+      "description": "Every sunrise, our AI Overseer selects one player from your circle to receive a unique, personalized quest."
+    },
+    "proofOfValor": {
+      "title": "Proof of Valor",
+      "description": "Action is the only currency. Upload a photo or video documenting your quest completion before the midnight bell tolls."
+    },
+    "councilVerdict": {
+      "title": "The Council's Verdict",
+      "description": "Your circle acts as the judges. They can authenticate your glory or vote to skip quests that don't fit the vibe."
+    },
+    "ascension": {
+      "title": "Ascension",
+      "description": "Amass XP, level up your profile, and unlock Legendary-tier quests with higher stakes and greater rewards."
+    },
+    "beginYour": "Begin Your ",
+    "odyssey": "Odyssey",
+    "description": "QuestBound is a gamified daily adventure for you and your inner circle. Level up your real life, one quest at a time."
+  },
+  "joinGroup": {
+    "error": "Something went wrong, could not join group..."
+  },
+  "auth": {
+    "signIn": {
+      "emailPlaceholder": "you@example.com",
+      "passwordPlaceholder": "..."
+    },
+    "signUp": {
+      "usernamePlaceholder": "Your username",
+      "emailPlaceholder": "you@example.com",
+      "passwordPlaceholder": "..."
+    }
+  },
+  "votes": {
+    "result": "Result: ",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "unknown": "Unknown",
+    "submitting": "Submitting...",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "quest": {
+    "completed": "Completed",
+    "skipped": "Skipped",
+    "todayQuest": "Today's Quest",
+    "userAvatar": "user avatar",
+    "loadingUser": "Loading user...",
+    "uploadEvidence": "Upload Evidence",
+    "skipQuest": "Skip Quest (Vote Required)"
+  },
+  "questCardFallback": {
+    "error": "Something went wrong while loading the quest.",
+    "subtext": "Please try again later, or tune in for tomorrow's quest."
+  },
+  "questTimer": {
+    "deadlineReached": "Deadline reached"
+  },
+  "membersList": {
+    "loading": "Loading members...",
+    "failed": "Failed to load members.",
+    "empty": "No members in this group.",
+    "leaving": "Leaving...",
+    "leaveGroup": "Leave Group"
+  },
+  "topBar": {
+    "settings": "Settings",
+    "theme": "Theme",
+    "language": "Language"
+  },
+  "appCrash": {
+    "title": "Something went wrong",
+    "description": "The app ran into an unexpected error. Try refreshing or come back later.",
+    "reload": "Reload app",
+    "tryAgain": "Try again"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "description": "Please refresh the page or contact support."
+  },
+  "pageNotFound": {
+    "code": "404",
+    "title": "Oops! The page you're looking for doesn't exist.",
+    "goHome": "Go Home",
+    "description": "Check the URL or return to the homepage."
+  },
+  "themeToggle": {
+    "toggleTheme": "Toggle theme"
+  },
+  "createVote": {
+    "title": "Start a Vote",
+    "subtitle": "Initiate a squad consensus for the current quest.",
+    "voteType": "VOTE TYPE",
+    "skipQuest": "Skip Quest",
+    "verify": "Verify",
+    "description": "DESCRIPTION / REASON",
+    "placeholder": "Why is this vote necessary? Provide details for your squad...",
+    "submitting": "Submitting...",
+    "submit": "Propose Vote",
+    "cancel": "Cancel"
+  },
+  "questCardVote": {
+    "viewActive": "View Active Vote",
+    "activeVote": "Active Vote",
+    "yes": "Yes",
+    "no": "No",
+    "votes": "votes"
   }
 }

@@ -5,11 +5,13 @@ import { useState } from "react";
 import BottomSheet from "../common/BottomSheet";
 import { ThemeToggle } from "./ThemeToggle";
 import LanguageToggle from "./LanguageToggle";
+import { useTranslation } from "react-i18next";
 
 /**
  * Used in the main layout
  */
 export default function TopBar() {
+  const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -38,17 +40,17 @@ export default function TopBar() {
       <BottomSheet isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)}>
         <div className="flex flex-col gap-6 pb-4">
           {/* Title */}
-          <h2 className="text-lg font-semibold text-center">Settings</h2>
+          <h2 className="text-lg font-semibold text-center">{t("topBar.settings")}</h2>
 
           {/* Theme */}
           <div className="flex items-center justify-between px-2">
-            <span className="text-sm">Theme</span>
+            <span className="text-sm">{t("topBar.theme")}</span>
             <ThemeToggle />
           </div>
 
           {/* Language */}
           <div className="flex items-center justify-between px-2">
-            <span className="text-sm">Language</span>
+            <span className="text-sm">{t("topBar.language")}</span>
             <LanguageToggle />
           </div>
         </div>

@@ -2,12 +2,14 @@ import type { QuestDTO } from "@/types/Receive/QuestDTO";
 import { LucideCircleStar, CheckCircle2, SkipForward } from "lucide-react";
 import { QuestStatusType } from "@/types/Receive/QuestStatusType";
 import InfoTag from "../common/InfoTag";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   quest: QuestDTO;
 };
 
 export default function StaticQuestCard({ quest }: Props) {
+  const { t } = useTranslation();
   const isCompleted = quest.status === QuestStatusType.Completed;
   const isSkipped = quest.status === QuestStatusType.Skipped;
 
@@ -23,7 +25,7 @@ export default function StaticQuestCard({ quest }: Props) {
           {(isCompleted || isSkipped) && (
             <div>
               <InfoTag
-                title={isCompleted ? "Completed" : "Skipped"}
+                title={isCompleted ? t("quest.completed") : t("quest.skipped")}
                 icon={
                   isCompleted ? (
                     <CheckCircle2 size={14} />

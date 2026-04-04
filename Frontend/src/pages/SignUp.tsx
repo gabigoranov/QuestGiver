@@ -91,7 +91,7 @@ export default function SignUp() {
               <User className="absolute left-3 w-4 h-4 text-on-surface-variant" />
               <Input
                 type="text"
-                placeholder="Your username"
+                placeholder={t("auth.signUp.usernamePlaceholder")}
                 {...register("username")}
                 className="pl-10"
               />
@@ -131,7 +131,7 @@ export default function SignUp() {
               <Mail className="absolute left-3 w-4 h-4 text-on-surface-variant" />
               <Input
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t("auth.signUp.emailPlaceholder")}
                 {...register("email")}
                 className="pl-10"
               />
@@ -145,7 +145,7 @@ export default function SignUp() {
             <div className="relative flex items-center">
               <Input
                 type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
+                placeholder={t("auth.signUp.passwordPlaceholder")}
                 {...register("password")}
               />
               <Button

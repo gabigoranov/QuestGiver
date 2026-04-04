@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 import { VotesService } from "@/services/votesService";
 import type { QuestDTO } from "@/types/Receive/QuestDTO";
@@ -40,6 +41,7 @@ export default function QuestCardCreateCompletionVote({
   setIsOpen,
   isOpen
 }: Props) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [selectedVoteType, setSelectedVoteType] = useState<VoteType>(voteType);
   const [description, setDescription] = useState("");
@@ -76,10 +78,10 @@ export default function QuestCardCreateCompletionVote({
       <DialogContent className="sm:max-w-md" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle className="text-3xl text-center font-semibold">
-            Start a Vote
+            {t("createVote.title")}
           </DialogTitle>
           <DialogDescription className="text-md text-center text-muted-foreground mt-1">
-            Initiate a squad consensus for the current quest.
+            {t("createVote.subtitle")}
           </DialogDescription>
         </DialogHeader>
 
@@ -88,7 +90,7 @@ export default function QuestCardCreateCompletionVote({
           {/* Vote Type */}
           <div>
             <p className="text-xs tracking-widest text-muted-foreground mb-2">
-              VOTE TYPE
+              {t("createVote.voteType")}
             </p>
 
             <div className="grid grid-cols-2 gap-2">
@@ -103,7 +105,7 @@ export default function QuestCardCreateCompletionVote({
               }`}
               >
                 <LucideSkipForward className="w-7! h-7!" />
-                Skip Quest
+                {t("createVote.skipQuest")}
               </Button>
 
               <Button
@@ -117,7 +119,7 @@ export default function QuestCardCreateCompletionVote({
               }`}
               >
                 <LucideBadgeCheck className="w-7! h-7!" />
-                Verify
+                {t("createVote.verify")}
               </Button>
             </div>
           </div>
@@ -125,13 +127,13 @@ export default function QuestCardCreateCompletionVote({
           {/* Description */}
           <div>
             <p className="text-xs tracking-widest text-muted-foreground mb-2">
-              DESCRIPTION / REASON
+              {t("createVote.description")}
             </p>
 
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Why is this vote necessary? Provide details for your squad..."
+              placeholder={t("createVote.placeholder")}
               className="w-full rounded-xl border bg-muted/40 p-3 text-sm outline-none focus:ring-2 focus:ring-primary min-h-25"
             />
           </div>
@@ -145,12 +147,12 @@ export default function QuestCardCreateCompletionVote({
             disabled={createVote.isPending}
             className="text-lg font-bold shadow-glow-primary py-6"
           >
-            {createVote.isPending ? "Submitting..." : "Propose Vote"}
+            {createVote.isPending ? t("createVote.submitting") : t("createVote.submit")}
           </Button>
 
           <DialogClose asChild>
             <Button variant="outline" className="py-6">
-              Cancel
+              {t("createVote.cancel")}
             </Button>
           </DialogClose>
         </DialogFooter>

@@ -75,7 +75,7 @@ export default function SignIn() {
               <Mail className="absolute left-3 w-4 h-4 text-on-surface-variant" />
               <Input
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t("auth.signIn.emailPlaceholder")}
                 {...register("email")}
                 className="pl-10"
               />
@@ -94,7 +94,7 @@ export default function SignIn() {
             <div className="relative flex items-center">
               <Input
                 type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
+                placeholder={t("auth.signIn.passwordPlaceholder")}
                 {...register("password")}
               />
               <Button
