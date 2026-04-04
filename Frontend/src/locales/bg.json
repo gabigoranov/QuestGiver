@@ -87,7 +87,9 @@
       "submit": "Вход",
       "submitting": "Влизане...",
       "noAccount": "Нямаш акаунт?",
-      "signUp": "Регистрация"
+      "signUp": "Регистрация",
+      "emailPlaceholder": "ти@пример.com",
+      "passwordPlaceholder": "..."
     },
     "signUp": {
       "title": "Създай акаунт",
@@ -101,7 +103,10 @@
       "submit": "Регистрация",
       "submitting": "Създаване на акаунт...",
       "hasAccount": "Вече имаш акаунт?",
-      "signIn": "Вход"
+      "signIn": "Вход",
+      "usernamePlaceholder": "Твоето потребителско име",
+      "emailPlaceholder": "ти@пример.com",
+      "passwordPlaceholder": "Вашата парола..."
     },
     "validation": {
       "invalidEmail": "Невалиден имейл адрес",
@@ -191,17 +196,6 @@
   },
   "joinGroup": {
     "error": "Нещо се обърка, не успяхме да те включим в групата..."
-  },
-  "auth": {
-    "signIn": {
-      "emailPlaceholder": "ти@пример.com",
-      "passwordPlaceholder": "..."
-    },
-    "signUp": {
-      "usernamePlaceholder": "Твоето потребителско име",
-      "emailPlaceholder": "ти@пример.com",
-      "passwordPlaceholder": "..."
-    }
   },
   "votes": {
     "result": "Резултат: ",

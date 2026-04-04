@@ -87,7 +87,9 @@
       "submit": "Sign in",
       "submitting": "Signing in...",
       "noAccount": "Don't have an account?",
-      "signUp": "Sign up"
+      "signUp": "Sign up",
+      "emailPlaceholder": "you@example.com",
+      "passwordPlaceholder": "Your Password..."
     },
     "signUp": {
       "title": "Create your account",
@@ -101,7 +103,10 @@
       "submit": "Sign up",
       "submitting": "Creating account...",
       "hasAccount": "Already have an account?",
-      "signIn": "Sign in"
+      "signIn": "Sign in",
+      "usernamePlaceholder": "Your username",
+      "emailPlaceholder": "you@example.com",
+      "passwordPlaceholder": "Your Password..."
     },
     "validation": {
       "invalidEmail": "Invalid email address",
@@ -191,17 +196,6 @@
   },
   "joinGroup": {
     "error": "Something went wrong, could not join group..."
-  },
-  "auth": {
-    "signIn": {
-      "emailPlaceholder": "you@example.com",
-      "passwordPlaceholder": "..."
-    },
-    "signUp": {
-      "usernamePlaceholder": "Your username",
-      "emailPlaceholder": "you@example.com",
-      "passwordPlaceholder": "..."
-    }
   },
   "votes": {
     "result": "Result: ",

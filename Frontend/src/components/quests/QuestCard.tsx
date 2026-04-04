@@ -44,8 +44,6 @@ type Props = {
  */
 export default function QuestCard({ quest, groupId }: Props) {
   const { t } = useTranslation();
-  console.log("status:", quest.status, typeof quest.status);
-  console.log("Skipped enum:", QuestStatusType.Skipped);
 
   const {data: appUser } = useQuery({
     queryKey: ["me"],
