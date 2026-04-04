@@ -1,11 +1,13 @@
-import { useContext } from "react";
-import { AuthContext } from "@/context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { QuestsService } from "@/services/questsService";
 import StaticQuestCard from "@/components/quests/StaticQuestCard";
+import { UsersService } from "@/services/usersService";
 
 export default function Profile() {
-  const auth = useContext(AuthContext);
+  const {data:user, isLoading } = useQuery({
+    queryKey: ["me"],
+    queryFn: UsersService.reloadSelf,
+  });
 
   // Load user history quests via tanstack query
   const { data } = useQuery({
@@ -13,16 +15,9 @@ export default function Profile() {
     queryFn: QuestsService.getAllUserQuests,
   });
 
-  if (!auth || auth.loading) {
+  if (isLoading || user == null) {
     return <div className="p-6 text-white">Loading...</div>;
   }
-
-  if (!auth.user) {
-    return <div className="p-6 text-white">Not authenticated</div>;
-  }
-
-  const { user } = auth;
-
   const progress = (user.experiencePoints / user.nextLevelExperience) * 100;
 
   return (
@@ -81,12 +76,7 @@ export default function Profile() {
         ) : data.length === 0 ? (
           <div className="text-muted-foreground text-sm">No quests yet.</div>
         ) : (
-          data.map((quest) => (
-            <StaticQuestCard
-              key={quest.id}
-              quest={quest}
-            />
-          ))
+          data.map((quest) => <StaticQuestCard key={quest.id} quest={quest} />)
         )}
       </div>
     </div>

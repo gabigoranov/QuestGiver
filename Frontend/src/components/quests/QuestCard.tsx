@@ -8,7 +8,6 @@ import {
 import InfoTag from "../common/InfoTag";
 import { UsersService } from "@/services/usersService";
 import { useQuery } from "@tanstack/react-query";
-import useAuth from "@/hooks/useAuth";
 import { VotesService } from "@/services/votesService";
 import QuestCardVote from "./QuestCardVote";
 import { Button } from "../ui/button";
@@ -46,7 +45,10 @@ export default function QuestCard({ quest, groupId }: Props) {
   console.log("status:", quest.status, typeof quest.status);
   console.log("Skipped enum:", QuestStatusType.Skipped);
 
-  const { user: appUser } = useAuth();
+  const {data: appUser } = useQuery({
+    queryKey: ["me"],
+    queryFn: UsersService.reloadSelf,
+  });
 
   const [isCompletionVoteOpen, setIsCompletionVoteOpen] = useState(false);
   const [isSkipVoteOpen, setIsSkipVoteOpen] = useState(false);

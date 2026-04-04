@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using QuestGiver.Data.Models;
+using QuestGiver.Extensions;
 using QuestGiver.Models.Send;
 using QuestGiver.Services.Users;
 
@@ -35,6 +37,18 @@ namespace QuestGiver.Controllers
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetUserById([FromRoute] Guid userId)
         {
+            UserDTO res = await _usersService.GetByIdAsync(userId);
+            return Ok(res);
+        }
+
+        /// <summary>
+        /// Loads user data for the authenticated user using their access token user id
+        /// </summary>
+        /// <returns>The current user info</returns>
+        [HttpGet("me")]
+        public async Task<IActionResult> GetTheAuthenticatedUser()
+        {
+            var userId = User.GetUserId();
             UserDTO res = await _usersService.GetByIdAsync(userId);
             return Ok(res);
         }

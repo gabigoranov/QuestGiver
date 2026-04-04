@@ -2,9 +2,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UserDTO } from "@/types/Receive/UserDTO";
 import { GroupsService } from "@/services/groupsService";
 import { Button } from "../ui/button";
-import useAuth from "@/hooks/useAuth";
 import UserCard from "../common/UserCard";
 import { useNavigate } from "react-router-dom";
+import { UsersService } from "@/services/usersService";
 
 type MembersListProps = {
   groupId: string;
@@ -23,11 +23,18 @@ type MembersListProps = {
  */
 export default function MembersList({ groupId }: MembersListProps) {
   const queryClient = useQueryClient();
-  const { user } = useAuth(); // Logged-in user
+  const { data: user } = useQuery({
+    queryKey: ["me"],
+    queryFn: UsersService.reloadSelf,
+  }); // Logged-in user
   const navigate = useNavigate();
 
   // Fetch group members
-  const { data: members, isLoading, isError } = useQuery<UserDTO[]>({
+  const {
+    data: members,
+    isLoading,
+    isError,
+  } = useQuery<UserDTO[]>({
     queryKey: ["group", groupId, "members"],
     queryFn: () => GroupsService.getGroupMembers(groupId),
   });
