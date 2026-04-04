@@ -33,5 +33,27 @@ namespace QuestGiver.Services.Users
 
             return _mapper.Map<UserDTO>(user);
         }
+
+        /// <inheritdoc />
+        public async Task IncreaseUserXP(Guid userId, int xp)
+        {
+            // Attribute the reward points to the user
+            User? user = await _repo.All<User>()
+                .FirstOrDefaultAsync(u => u.Id == userId); // We assume the user exists because we find the quest with his user id
+
+            if (user == null)
+                throw new KeyNotFoundException("No user with specified id was found");
+
+            user.ExperiencePoints += xp;
+            while (user.ExperiencePoints >= user.NextLevelExperience)
+            {
+                user.Level++;
+                user.ExperiencePoints -= user.NextLevelExperience;
+                user.NextLevelExperience = (int)(user.NextLevelExperience * 1.25);
+            }
+
+            _repo.Update(user);
+            await _repo.SaveChangesAsync();
+        }
     }
 }

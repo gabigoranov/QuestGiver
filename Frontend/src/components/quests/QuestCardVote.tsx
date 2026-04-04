@@ -1,6 +1,7 @@
 import type { VoteDTO } from "@/types/Receive/VoteDTO";
 import { Button } from "../ui/button";
 import VoteActions from "../votes/VoteDetails";
+import { useTranslation } from "react-i18next";
 
 import {
   Dialog,
@@ -24,6 +25,7 @@ type Props = {
  * @return {*}
  */
 export default function QuestCardVote({ vote, chosenUserId }: Props) {
+  const { t } = useTranslation();
   const total = vote.userVotes.length;
   const yes = vote.userVotes.filter((v) => v.decision === true).length;
   const no = vote.userVotes.filter((v) => v.decision === false).length;
@@ -34,7 +36,7 @@ export default function QuestCardVote({ vote, chosenUserId }: Props) {
     <Dialog>
       <DialogTrigger asChild>
         <Button className="text-lg py-6 rounded-full font-semibold shadow-glow-primary">
-          View Active Vote
+          {t("questCardVote.viewActive")}
         </Button>
       </DialogTrigger>
 
@@ -44,7 +46,7 @@ export default function QuestCardVote({ vote, chosenUserId }: Props) {
       >
         <DialogHeader>
           <DialogTitle className="text-3xl text-center font-semibold">
-            Active Vote
+            {t("questCardVote.activeVote")}
           </DialogTitle>
         </DialogHeader>
 
@@ -56,8 +58,8 @@ export default function QuestCardVote({ vote, chosenUserId }: Props) {
         <div className="mt-6 space-y-4">
           {/* Percent labels */}
           <div className="flex justify-between text-sm font-medium">
-            <span className="text-primary">Yes {yesPercentage}%</span>
-            <span className="text-muted-foreground">No {noPercentage}%</span>
+            <span className="text-primary">{t("questCardVote.yes")} {yesPercentage}%</span>
+            <span className="text-muted-foreground">{t("questCardVote.no")} {noPercentage}%</span>
           </div>
 
           {/* Split bar */}
@@ -74,8 +76,8 @@ export default function QuestCardVote({ vote, chosenUserId }: Props) {
 
           {/* Counts */}
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{yes} votes</span>
-            <span>{no} votes</span>
+            <span>{yes} {t("questCardVote.votes")}</span>
+            <span>{no} {t("questCardVote.votes")}</span>
           </div>
         </div>
 

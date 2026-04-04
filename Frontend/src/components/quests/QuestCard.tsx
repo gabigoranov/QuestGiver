@@ -15,6 +15,7 @@ import { useState } from "react";
 import CreateVoteDialog from "../votes/CreateVoteDialog";
 import { VoteType } from "@/types/VoteType";
 import { QuestStatusType } from "@/types/Receive/QuestStatusType";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   quest: QuestDTO;
@@ -42,6 +43,7 @@ type Props = {
  * @returns JSX.Element
  */
 export default function QuestCard({ quest, groupId }: Props) {
+  const { t } = useTranslation();
   console.log("status:", quest.status, typeof quest.status);
   console.log("Skipped enum:", QuestStatusType.Skipped);
 
@@ -82,7 +84,7 @@ export default function QuestCard({ quest, groupId }: Props) {
       {/* Header: Label + XP + Status */}
       <div className="flex justify-between items-center mb-4">
         <span className="text-xs text-primary uppercase tracking-widest font-semibold">
-          Today's Quest
+          {t("quest.todayQuest")}
         </span>
 
         <div className="flex items-stretch gap-2">
@@ -130,7 +132,7 @@ export default function QuestCard({ quest, groupId }: Props) {
               : (chosenUser?.avatarUrl ??
                 "https://static.vecteezy.com/system/resources/previews/013/360/247/non_2x/default-avatar-photo-icon-social-media-profile-sign-symbol-vector.jpg")
           }
-          alt="user avatar"
+          alt={t("quest.userAvatar")}
           className="w-8 h-8 rounded-full"
         />
 
@@ -141,7 +143,7 @@ export default function QuestCard({ quest, groupId }: Props) {
               : "text-primary"
           }`}
         >
-          {isUserPending ? "Loading user..." : chosenUser!.username}
+          {isUserPending ? t("quest.loadingUser") : chosenUser!.username}
         </span>
       </div>
 
@@ -165,7 +167,7 @@ export default function QuestCard({ quest, groupId }: Props) {
               onClick={() => setIsCompletionVoteOpen(true)}
               className="text-xl py-8 rounded-full font-bold shadow-glow-primary flex items-center gap-3"
             >
-              Upload Evidence
+              {t("quest.uploadEvidence")}
             </Button>
 
             {/* Completion Vote Dialog */}
@@ -184,7 +186,7 @@ export default function QuestCard({ quest, groupId }: Props) {
               className="text-sm py-2 rounded-full uppercase font-semibold tracking-wider mt-2 flex items-center gap-3 text-muted-foreground"
             >
               <RotateCw size={16} />
-              Skip Quest (Vote Required)
+              {t("quest.skipQuest")}
             </Button>
 
             {/* Skip Vote Dialog */}

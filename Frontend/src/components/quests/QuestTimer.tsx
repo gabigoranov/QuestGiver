@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { LucideClock } from "lucide-react";
 import type { QuestDTO } from "@/types/Receive/QuestDTO";
 import InfoTag from "../common/InfoTag";
+import { useTranslation } from "react-i18next";
 
 
 /**
@@ -10,9 +11,10 @@ import InfoTag from "../common/InfoTag";
  *
  * @export
  * @param {{ quest: QuestDTO }} { quest }
- * @return {*} 
+ * @return {*}
  */
 export function QuestTimer({ quest }: { quest: QuestDTO }) {
+  const { t } = useTranslation();
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [colorVariant, setColorVariant] = useState<"primary" | "secondary" | "tertiary" | "error">("primary");
 
@@ -29,7 +31,7 @@ export function QuestTimer({ quest }: { quest: QuestDTO }) {
       const diff = nextDeadline.getTime() - now.getTime();
 
       if (diff <= 0) {
-        setTimeLeft("Deadline reached");
+        setTimeLeft(t("questTimer.deadlineReached"));
         return;
       }
 

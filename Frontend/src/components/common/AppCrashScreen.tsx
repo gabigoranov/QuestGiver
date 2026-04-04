@@ -1,5 +1,6 @@
 import { LucideTriangleAlert } from "lucide-react";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   error?: Error;
@@ -7,6 +8,7 @@ type Props = {
 };
 
 export default function AppCrashScreen({ error, reset }: Props) {
+  const { t } = useTranslation();
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -21,11 +23,11 @@ export default function AppCrashScreen({ error, reset }: Props) {
         </div>
 
         <h1 className="text-xl font-heading mb-2">
-          Something went wrong
+          {t("appCrash.title")}
         </h1>
 
         <p className="text-sm text-muted-foreground mb-6">
-          The app ran into an unexpected error. Try refreshing or come back later.
+          {t("appCrash.description")}
         </p>
 
         <div className="flex flex-col gap-3">
@@ -33,7 +35,7 @@ export default function AppCrashScreen({ error, reset }: Props) {
             onClick={() => window.location.reload()}
             className="w-full rounded-xl bg-primary text-primary-foreground py-3 font-medium shadow-glow-primary"
           >
-            Reload app
+            {t("appCrash.reload")}
           </button>
 
           {reset && (
@@ -41,7 +43,7 @@ export default function AppCrashScreen({ error, reset }: Props) {
               onClick={reset}
               className="w-full rounded-xl bg-muted text-muted-foreground py-3 font-medium"
             >
-              Try again
+              {t("appCrash.tryAgain")}
             </button>
           )}
         </div>

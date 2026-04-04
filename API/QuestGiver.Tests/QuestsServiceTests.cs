@@ -11,6 +11,7 @@ using QuestGiver.Data.Constants;
 using QuestGiver.Data.Models;
 using QuestGiver.Models.Receive;
 using QuestGiver.Services.Quests;
+using QuestGiver.Services.Users;
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Text.Json;
@@ -39,6 +40,7 @@ namespace QuestGiver.Tests
         private readonly IConfiguration _config;
         private readonly Mock<ChatClient> _chatClientMock;
         private readonly Mock<OpenAIClient> _openAiMock;
+        private readonly Mock<IUsersService> _usersServiceMock;
         private readonly QuestsService _service;
 
         /// <summary>
@@ -69,12 +71,13 @@ namespace QuestGiver.Tests
 
             _chatClientMock = new Mock<ChatClient>(MockBehavior.Loose);
             _openAiMock = new Mock<OpenAIClient>();
+            _usersServiceMock = new Mock<IUsersService>();
 
             _openAiMock
                 .Setup(x => x.GetChatClient(It.IsAny<string>()))
                 .Returns(_chatClientMock.Object);
 
-            _service = new QuestsService(_repo, _mapper, _config, _openAiMock.Object);
+            _service = new QuestsService(_repo, _mapper, _config, _openAiMock.Object, _usersServiceMock.Object);
         }
 
         /// <summary>
@@ -250,6 +253,11 @@ namespace QuestGiver.Tests
             await _repo.AddAsync(quest);
             await _repo.SaveChangesAsync();
 
+            // Detach all tracked entities so the service can track them fresh.
+            // The service loads the quest AsNoTracking, modifies it, then calls Update().
+            // If the context already tracks the same entity, EF Core throws.
+            _context.ChangeTracker.Clear();
+
             var result = await _service.GetCurrentQuestForGroupAsync(group.Id, user.Id);
 
             Assert.NotNull(result);
@@ -259,12 +267,26 @@ namespace QuestGiver.Tests
 
         /// <summary>
         /// Verifies that requesting the current quest when no quest is scheduled
-        /// for today throws <see cref="KeyNotFoundException"/>.
+        /// for today triggers AI generation and throws <see cref="KeyNotFoundException"/>
+        /// (because the newly generated quests are scheduled for future dates, not today).
         /// </summary>
         [Fact]
         public async Task GetCurrentQuestForGroupAsync_NoQuestToday_Throws()
         {
             var (group, user) = await SeedGroupWithUserAsync();
+
+            // Mock the AI response so generation succeeds without throwing
+            var generatedQuests = new[]
+            {
+                new GeneratedQuestDTO
+                {
+                    UserId = user.Id,
+                    Title = "Generated quest",
+                    Description = "Generated description",
+                    RewardPoints = 15
+                }
+            };
+            SetupAiResponse(JsonSerializer.Serialize(generatedQuests));
 
             await Assert.ThrowsAsync<KeyNotFoundException>(
                 () => _service.GetCurrentQuestForGroupAsync(group.Id, user.Id));
@@ -402,6 +424,20 @@ namespace QuestGiver.Tests
             todayQuest.RewardPoints = 40;
             await _context.SaveChangesAsync();
 
+            // Set up the mock to actually increase the user's XP in the database
+            _usersServiceMock
+                .Setup(x => x.IncreaseUserXP(user.Id, It.IsAny<int>()))
+                .Callback<Guid, int>((uid, xp) =>
+                {
+                    var dbUser = _context.Set<User>().Find(uid);
+                    if (dbUser != null)
+                    {
+                        dbUser.ExperiencePoints += xp;
+                        _context.SaveChanges();
+                    }
+                })
+                .Returns(Task.CompletedTask);
+
             var result = await _service.CompleteQuestAsync(todayQuest.Id, user.Id);
 
             var updatedQuest = await _context.Set<Quest>().FirstAsync(x => x.Id == todayQuest.Id);
@@ -467,6 +503,298 @@ namespace QuestGiver.Tests
 
             await Assert.ThrowsAsync<KeyNotFoundException>(
                 () => _service.CompleteQuestAsync(Guid.NewGuid(), user.Id));
+        }
+
+        #endregion
+
+        #region SkipQuestAsync
+
+        /// <summary>
+        /// Verifies that skipping a quest:
+        /// - marks the quest status as Skipped
+        /// - triggers AI-based quest generation when the queue needs refill
+        /// - returns the updated quest DTO
+        /// </summary>
+        [Fact]
+        public async Task SkipQuestAsync_WithValidData_SkipsQuest_AndRefillsQueue()
+        {
+            var (group, user) = await SeedGroupWithUserAsync();
+
+            // Seed only today's quest so the queue is below the desired size
+            await SeedQuestQueueAsync(group, user, 1, includeTodayQuest: true);
+
+            var todayQuest = await _context.Set<Quest>()
+                .FirstAsync(x => x.ScheduledDate == DateTime.UtcNow.Date && x.FriendGroupId == group.Id);
+
+            todayQuest.UserId = user.Id;
+            todayQuest.RewardPoints = 20;
+            await _context.SaveChangesAsync();
+
+            // Mock the AI response for queue refill
+            var generatedQuests = new[]
+            {
+                new GeneratedQuestDTO
+                {
+                    UserId = user.Id,
+                    Title = "Replacement quest",
+                    Description = "Replacement description",
+                    RewardPoints = 15
+                }
+            };
+            SetupAiResponse(JsonSerializer.Serialize(generatedQuests));
+
+            var result = await _service.SkipQuestAsync(todayQuest.Id, user.Id);
+
+            Assert.NotNull(result);
+            Assert.Equal(QuestGiver.Data.Common.QuestStatusType.Skipped, result.Status);
+
+            var updatedQuest = await _context.Set<Quest>().FirstAsync(x => x.Id == todayQuest.Id);
+            Assert.Equal(QuestGiver.Data.Common.QuestStatusType.Skipped, updatedQuest.Status);
+            Assert.Null(updatedQuest.DateCompleted);
+
+            // Verify AI was called to refill the queue
+            _chatClientMock.Verify(
+                x => x.CompleteChatAsync(It.IsAny<ChatMessage[]>()),
+                Times.Once);
+        }
+
+        /// <summary>
+        /// Verifies that skipping a quest when the queue is already full
+        /// still marks the quest as skipped but still attempts a queue refill
+        /// (which will find 0 needed quests and return early).
+        /// </summary>
+        [Fact]
+        public async Task SkipQuestAsync_WithFullQueue_SkipsQuest_AndDoesNotCallAi()
+        {
+            var (group, user) = await SeedGroupWithUserAsync();
+
+            var desiredQueueSize = QuestQueeueConstants.DesiredQueeueSize;
+            await SeedQuestQueueAsync(group, user, desiredQueueSize + 1, includeTodayQuest: true);
+
+            var todayQuest = await _context.Set<Quest>()
+                .FirstAsync(x => x.ScheduledDate == DateTime.UtcNow.Date && x.FriendGroupId == group.Id);
+
+            todayQuest.UserId = user.Id;
+            todayQuest.RewardPoints = 10;
+            await _context.SaveChangesAsync();
+
+            var result = await _service.SkipQuestAsync(todayQuest.Id, user.Id);
+
+            Assert.NotNull(result);
+            Assert.Equal(QuestGiver.Data.Common.QuestStatusType.Skipped, result.Status);
+
+            var updatedQuest = await _context.Set<Quest>().FirstAsync(x => x.Id == todayQuest.Id);
+            Assert.Equal(QuestGiver.Data.Common.QuestStatusType.Skipped, updatedQuest.Status);
+
+            // AI should not be called because the queue is already full
+            _chatClientMock.Verify(
+                x => x.CompleteChatAsync(It.IsAny<ChatMessage[]>()),
+                Times.Never);
+        }
+
+        /// <summary>
+        /// Verifies that attempting to skip a quest that does not exist for the
+        /// specified user throws <see cref="KeyNotFoundException"/>.
+        /// </summary>
+        [Fact]
+        public async Task SkipQuestAsync_UnknownQuest_Throws()
+        {
+            var (_, user) = await SeedGroupWithUserAsync();
+
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _service.SkipQuestAsync(Guid.NewGuid(), user.Id));
+        }
+
+        /// <summary>
+        /// Verifies that a user who is not assigned to the quest cannot skip it.
+        /// The service queries quests by both questId AND userId, so an unassigned user
+        /// receives <see cref="KeyNotFoundException"/> rather than <see cref="UnauthorizedAccessException"/>.
+        /// </summary>
+        [Fact]
+        public async Task SkipQuestAsync_UserNotAssigned_Throws()
+        {
+            var (group, user) = await SeedGroupWithUserAsync();
+
+            var otherUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Email = "other@test.com",
+                Username = "otheruser",
+                BirthDate = new DateTime(2000, 1, 1),
+                Description = "desc",
+                PasswordHash = "this password hash won't be used",
+            };
+
+            await _repo.AddAsync(otherUser);
+            await _repo.SaveChangesAsync();
+
+            var quest = new Quest
+            {
+                Id = Guid.NewGuid(),
+                FriendGroupId = group.Id,
+                UserId = user.Id, // assigned to the original user
+                ScheduledDate = DateTime.UtcNow.Date,
+                Title = "Quest",
+                Description = "Desc",
+                RewardPoints = 10
+            };
+
+            await _repo.AddAsync(quest);
+            await _repo.SaveChangesAsync();
+
+            // The other user tries to skip this quest - the query filters by userId,
+            // so the quest is not found for the other user
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _service.SkipQuestAsync(quest.Id, otherUser.Id));
+        }
+
+        #endregion
+
+        #region GetAllUserQuests
+
+        /// <summary>
+        /// Verifies that GetAllUserQuests returns only past and today quests
+        /// for the specified user, excluding any future scheduled quests.
+        /// </summary>
+        [Fact]
+        public async Task GetAllUserQuests_ReturnsOnlyPastAndTodayQuests()
+        {
+            var (group, user) = await SeedGroupWithUserAsync();
+
+            // Seed a completed quest from the past
+            var pastQuest = new Quest
+            {
+                Id = Guid.NewGuid(),
+                FriendGroupId = group.Id,
+                UserId = user.Id,
+                ScheduledDate = DateTime.UtcNow.Date.AddDays(-3),
+                Title = "Past quest",
+                Description = "Completed long ago",
+                RewardPoints = 20,
+                DateCompleted = DateTime.UtcNow.Date.AddDays(-2),
+                Status = QuestGiver.Data.Common.QuestStatusType.Completed
+            };
+
+            // Seed today's quest (not completed)
+            var todayQuest = new Quest
+            {
+                Id = Guid.NewGuid(),
+                FriendGroupId = group.Id,
+                UserId = user.Id,
+                ScheduledDate = DateTime.UtcNow.Date,
+                Title = "Today quest",
+                Description = "Happening now",
+                RewardPoints = 10
+            };
+
+            // Seed a future quest (should NOT be returned)
+            var futureQuest = new Quest
+            {
+                Id = Guid.NewGuid(),
+                FriendGroupId = group.Id,
+                UserId = user.Id,
+                ScheduledDate = DateTime.UtcNow.Date.AddDays(5),
+                Title = "Future quest",
+                Description = "Not yet",
+                RewardPoints = 15
+            };
+
+            await _repo.AddAsync(pastQuest);
+            await _repo.AddAsync(todayQuest);
+            await _repo.AddAsync(futureQuest);
+            await _repo.SaveChangesAsync();
+
+            var result = await _service.GetAllUserQuests(user.Id);
+
+            // Should return past + today, but NOT future
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+            Assert.Contains(result, q => q.Title == "Past quest");
+            Assert.Contains(result, q => q.Title == "Today quest");
+            Assert.DoesNotContain(result, q => q.Title == "Future quest");
+        }
+
+        /// <summary>
+        /// Verifies that GetAllUserQuests returns an empty list when the user
+        /// has no quests in the system.
+        /// </summary>
+        [Fact]
+        public async Task GetAllUserQuests_WithNoQuests_ReturnsEmptyList()
+        {
+            var (_, user) = await SeedGroupWithUserAsync();
+
+            var result = await _service.GetAllUserQuests(user.Id);
+
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
+
+        /// <summary>
+        /// Verifies that GetAllUserQuests only returns quests belonging to the
+        /// specified user, excluding quests assigned to other users in the same group.
+        /// </summary>
+        [Fact]
+        public async Task GetAllUserQuests_ExcludesOtherUsersQuests()
+        {
+            var (group, user) = await SeedGroupWithUserAsync();
+
+            // Create a second user in the same group
+            var otherUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Email = "other2@test.com",
+                Username = "otheruser2",
+                BirthDate = new DateTime(2000, 1, 1),
+                Description = "desc",
+                PasswordHash = "this password hash won't be used",
+            };
+
+            var otherLink = new UserFriendGroup
+            {
+                UserId = otherUser.Id,
+                FriendGroupId = group.Id
+            };
+
+            await _repo.AddAsync(otherUser);
+            await _repo.AddAsync(otherLink);
+
+            // A past quest for the target user
+            var myQuest = new Quest
+            {
+                Id = Guid.NewGuid(),
+                FriendGroupId = group.Id,
+                UserId = user.Id,
+                ScheduledDate = DateTime.UtcNow.Date.AddDays(-1),
+                Title = "My quest",
+                Description = "Mine",
+                RewardPoints = 10,
+                DateCompleted = DateTime.UtcNow.Date,
+                Status = QuestGiver.Data.Common.QuestStatusType.Completed
+            };
+
+            // A past quest for the other user (should NOT be returned)
+            var otherQuest = new Quest
+            {
+                Id = Guid.NewGuid(),
+                FriendGroupId = group.Id,
+                UserId = otherUser.Id,
+                ScheduledDate = DateTime.UtcNow.Date.AddDays(-2),
+                Title = "Other quest",
+                Description = "Not mine",
+                RewardPoints = 15,
+                DateCompleted = DateTime.UtcNow.Date.AddDays(-1),
+                Status = QuestGiver.Data.Common.QuestStatusType.Completed
+            };
+
+            await _repo.AddAsync(myQuest);
+            await _repo.AddAsync(otherQuest);
+            await _repo.SaveChangesAsync();
+
+            var result = await _service.GetAllUserQuests(user.Id);
+
+            Assert.NotNull(result);
+            Assert.Single(result);
+            Assert.Equal("My quest", result[0].Title);
         }
 
         #endregion

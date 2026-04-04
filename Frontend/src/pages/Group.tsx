@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 /**
  * The page to view a group the user belongs to
@@ -20,6 +21,7 @@ import { useParams } from "react-router-dom";
  * @export
  */
 export default function Group() {
+  const { t } = useTranslation();
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isMembersOpen, setIsMembersOpen] = useState(false);
 
@@ -69,7 +71,7 @@ export default function Group() {
           onClick={() => setIsInviteOpen(true)}
           className="flex-1 rounded-2xl h-12 flex items-center justify-center gap-2 shadow-sm uppercase text-md tracking-wider font-semibold"
         >
-          Invite
+          {t("group.invite")}
         </Button>
 
         {/* View Members (Secondary) */}
@@ -78,7 +80,7 @@ export default function Group() {
           onClick={() => setIsMembersOpen(true)}
           className="flex-1 rounded-2xl h-12 flex items-center justify-center gap-2 uppercase text-md tracking-wider font-semibold"
         >
-          Members
+          {t("group.members")}
           <ArrowRight size={16} />
         </Button>
       </div>
@@ -86,7 +88,7 @@ export default function Group() {
       {/* Bottom sheets for inviting a user */}
       <BottomSheet isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)}>
         <div className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold">Invite Link</h2>
+          <h2 className="text-lg font-semibold">{t("group.inviteLink")}</h2>
 
           <div className="flex items-center justify-between gap-3 bg-muted/50 border border-border rounded-xl px-4 py-3">
             <span className="text-sm text-muted-foreground truncate">
@@ -105,7 +107,7 @@ export default function Group() {
                 setIsInviteOpen(false);
               }}
             >
-              Copy
+              {t("group.copy")}
             </Button>
           </div>
         </div>

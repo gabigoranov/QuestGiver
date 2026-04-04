@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { VotesService } from "@/services/votesService";
 import type { VoteDTO } from "@/types/Receive/VoteDTO";
 import { UsersService } from "@/services/usersService";
+import { useTranslation } from "react-i18next";
 
 type VoteActionsProps = {
   vote: VoteDTO;
@@ -14,7 +15,7 @@ type VoteActionsProps = {
  *
  * Displays vote statistics and the current decision for a quest vote.
  * If the logged-in user is not the chosen user for the quest but belongs to the group,
- * they can submit their opinion (yes / no) if they haven’t voted yet.
+ * they can submit their opinion (yes / no) if they haven't voted yet.
  *
  * @param {VoteActionsProps} props - Component props
  * @param {VoteDTO} props.vote - The vote object to display
@@ -22,6 +23,7 @@ type VoteActionsProps = {
  * @returns JSX.Element
  */
 export default function VoteActions({ vote, chosenUserId }: VoteActionsProps) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const {data:user } = useQuery({
@@ -51,7 +53,7 @@ export default function VoteActions({ vote, chosenUserId }: VoteActionsProps) {
       {/* Overall decision */}
       {vote.decision !== undefined && (
         <div className="text-lg font-semibold">
-          Result:{" "}
+          {t("votes.result")}
           <span
             className={
               vote.decision != null
@@ -63,9 +65,9 @@ export default function VoteActions({ vote, chosenUserId }: VoteActionsProps) {
           >
             {vote.decision != null
               ? vote.decision
-                ? "Approved"
-                : "Rejected"
-              : "Unknown"}
+                ? t("votes.approved")
+                : t("votes.rejected")
+              : t("votes.unknown")}
           </span>
         </div>
       )}
@@ -78,7 +80,7 @@ export default function VoteActions({ vote, chosenUserId }: VoteActionsProps) {
             disabled={submitVote.isPending}
             className="py-6 text-lg font-semibold"
           >
-            {submitVote.isPending ? "Submitting..." : "Yes"}
+            {submitVote.isPending ? t("votes.submitting") : t("votes.yes")}
           </Button>
 
           <Button
@@ -87,7 +89,7 @@ export default function VoteActions({ vote, chosenUserId }: VoteActionsProps) {
             disabled={submitVote.isPending}
             className="py-6 text-lg font-semibold"
           >
-            {submitVote.isPending ? "Submitting..." : "No"}
+            {submitVote.isPending ? t("votes.submitting") : t("votes.no")}
           </Button>
         </div>
       )}

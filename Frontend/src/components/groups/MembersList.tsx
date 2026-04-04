@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import UserCard from "../common/UserCard";
 import { useNavigate } from "react-router-dom";
 import { UsersService } from "@/services/usersService";
+import { useTranslation } from "react-i18next";
 
 type MembersListProps = {
   groupId: string;
@@ -22,6 +23,7 @@ type MembersListProps = {
  * @returns JSX.Element
  */
 export default function MembersList({ groupId }: MembersListProps) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: user } = useQuery({
     queryKey: ["me"],
@@ -51,8 +53,8 @@ export default function MembersList({ groupId }: MembersListProps) {
     onError: (err) => console.error("Failed to leave the group:", err),
   });
 
-  if (isLoading) return <div>Loading members...</div>;
-  if (isError) return <div>Failed to load members.</div>;
+  if (isLoading) return <div>{t("membersList.loading")}</div>;
+  if (isError) return <div>{t("membersList.failed")}</div>;
 
   return (
     <div className="flex flex-col gap-4">
@@ -66,7 +68,7 @@ export default function MembersList({ groupId }: MembersListProps) {
           />
         ))
       ) : (
-        <div>No members in this group.</div>
+        <div>{t("membersList.empty")}</div>
       )}
 
       {/* Leave group button */}
@@ -76,7 +78,7 @@ export default function MembersList({ groupId }: MembersListProps) {
           onClick={() => leaveGroup.mutate()}
           disabled={leaveGroup.isPending}
         >
-          {leaveGroup.isPending ? "Leaving..." : "Leave Group"}
+          {leaveGroup.isPending ? t("membersList.leaving") : t("membersList.leaveGroup")}
         </Button>
       </div>
     </div>

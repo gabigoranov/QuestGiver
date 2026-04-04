@@ -243,5 +243,124 @@ namespace QuestGiver.Tests
         }
 
         #endregion
+
+        #region RefreshLogin
+
+        /// <summary>
+        /// Verifies that providing a valid refresh token:
+        /// - delegates to the token service to rotate the token
+        /// - loads the associated user from the database
+        /// - returns an <see cref="AuthResponse"/> with the refreshed token and user data
+        /// </summary>
+        [Fact]
+        public async Task RefreshLogin_WithValidRefreshToken_ReturnsAuthResponse()
+        {
+            // Arrange
+            var user = await SeedUserAsync();
+            var refreshToken = "valid-refresh-token";
+            var newRefreshToken = "rotated-refresh-token";
+            var newAccessToken = "new-access-token";
+
+            _tokensServiceMock
+                .Setup(x => x.RefreshTokenAsync(refreshToken))
+                .ReturnsAsync(new Token
+                {
+                    Id = 42,
+                    UserId = user.Id,
+                    RefreshToken = newRefreshToken,
+                    AccessToken = newAccessToken,
+                    ExpirationDateTime = DateTime.UtcNow.AddDays(7),
+                    IsRevoked = false
+                });
+
+            // Act
+            var result = await _authService.RefreshLogin(refreshToken);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(result.User);
+            Assert.NotNull(result.Token);
+            Assert.Equal(user.Email, result.User.Email);
+            Assert.Equal(user.Id, result.User.Id);
+
+            _tokensServiceMock.Verify(x => x.RefreshTokenAsync(refreshToken), Times.Once);
+        }
+
+        /// <summary>
+        /// Verifies that when the token service throws <see cref="UnauthorizedAccessException"/>
+        /// for an invalid or expired refresh token, the exception propagates through the auth service.
+        /// </summary>
+        [Fact]
+        public async Task RefreshLogin_WithInvalidRefreshToken_ThrowsUnauthorizedAccessException()
+        {
+            // Arrange
+            var refreshToken = "invalid-refresh-token";
+
+            _tokensServiceMock
+                .Setup(x => x.RefreshTokenAsync(refreshToken))
+                .ThrowsAsync(new UnauthorizedAccessException("Invalid refresh token."));
+
+            // Act & Assert
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(
+                () => _authService.RefreshLogin(refreshToken));
+        }
+
+        /// <summary>
+        /// Verifies that when the token service throws <see cref="UnauthorizedAccessException"/>
+        /// for a revoked refresh token, the exception propagates through the auth service.
+        /// </summary>
+        [Fact]
+        public async Task RefreshLogin_WithRevokedRefreshToken_ThrowsUnauthorizedAccessException()
+        {
+            // Arrange
+            var refreshToken = "revoked-refresh-token";
+
+            _tokensServiceMock
+                .Setup(x => x.RefreshTokenAsync(refreshToken))
+                .ThrowsAsync(new UnauthorizedAccessException(
+                    "Refresh token has been revoked. All related tokens have been revoked for security reasons."));
+
+            // Act & Assert
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(
+                () => _authService.RefreshLogin(refreshToken));
+        }
+
+        /// <summary>
+        /// Verifies that the returned <see cref="TokenDTO"/> from RefreshLogin
+        /// contains the rotated access token and refresh token.
+        /// </summary>
+        [Fact]
+        public async Task RefreshLogin_ReturnsRotatedTokenData()
+        {
+            // Arrange
+            var user = await SeedUserAsync();
+            var refreshToken = "valid-refresh-token";
+            var newRefreshToken = "rotated-refresh-token";
+            var newAccessToken = "new-access-token";
+            var expiration = DateTime.UtcNow.AddDays(7);
+
+            _tokensServiceMock
+                .Setup(x => x.RefreshTokenAsync(refreshToken))
+                .ReturnsAsync(new Token
+                {
+                    Id = 10,
+                    UserId = user.Id,
+                    RefreshToken = newRefreshToken,
+                    AccessToken = newAccessToken,
+                    ExpirationDateTime = expiration,
+                    IsRevoked = false
+                });
+
+            // Act
+            var result = await _authService.RefreshLogin(refreshToken);
+
+            // Assert
+            Assert.NotNull(result.Token);
+            Assert.Equal(newAccessToken, result.Token.AccessToken);
+            Assert.Equal(newRefreshToken, result.Token.RefreshToken);
+            Assert.Equal(expiration, result.Token.ExpirationDateTime);
+        }
+
+        #endregion
     }
 }

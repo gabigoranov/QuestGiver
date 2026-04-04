@@ -8,6 +8,7 @@ using QuestGiver.Data.Models;
 using QuestGiver.Models.Receive;
 using QuestGiver.Models.Send;
 using QuestGiver.Services.Groups;
+using QuestGiver.Services.Users;
 using System.Diagnostics;
 using System.Text.Json;
 
@@ -19,6 +20,7 @@ namespace QuestGiver.Services.Quests
         private readonly IRepository _repo;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
+        private readonly IUsersService _usersService;
         private readonly ChatClient _chatClient;
 
         /// <summary>
@@ -28,7 +30,8 @@ namespace QuestGiver.Services.Quests
         /// <param name="mapper">Automapper</param>
         /// <param name="configuration">The app settings configuration.</param>
         /// <param name="aiClient">The open ai client</param>
-        public QuestsService(IRepository repo, IMapper mapper, IConfiguration configuration, OpenAIClient aiClient)
+        /// <param name="usersService">Users service</param>
+        public QuestsService(IRepository repo, IMapper mapper, IConfiguration configuration, OpenAIClient aiClient, IUsersService usersService)
         {
             _repo = repo;
             _mapper = mapper;
@@ -37,6 +40,7 @@ namespace QuestGiver.Services.Quests
 
             var apiKeysSection = _configuration.GetSection("APIKeys");
             _chatClient = aiClient.GetChatClient("gpt-5-nano");
+            _usersService = usersService;
         }
 
         /// <summary>
@@ -352,21 +356,7 @@ namespace QuestGiver.Services.Quests
             quest.DateCompleted = DateTime.UtcNow;
             quest.Status = QuestStatusType.Completed;
 
-            // Attribute the reward points to the user
-            var user = await _repo.All<User>()
-                .FirstAsync(u => u.Id == userId); // We assume the user exists because we find the quest with his user id
-
-            // TODO: Eventually move this logic into a users service
-            user.ExperiencePoints += quest.RewardPoints;
-            if(user.ExperiencePoints >= user.NextLevelExperience)
-            {
-                user.Level++;
-                user.ExperiencePoints -= user.NextLevelExperience;
-                user.NextLevelExperience = (int)(user.NextLevelExperience * 1.25);
-            }
-
-            _repo.Update<User>(user);
-            await _repo.SaveChangesAsync();
+            await _usersService.IncreaseUserXP(userId, quest.RewardPoints);
 
             try
             {
@@ -385,7 +375,7 @@ namespace QuestGiver.Services.Quests
         /// <inheritdoc />
         public async Task SetIsGeneratingQuestsAsync(Guid groupId, bool isGeneratingQuests)
         {
-            FriendGroup? group = await _repo.AllReadonly<FriendGroup>().FirstOrDefaultAsync(g => g.Id == groupId);
+            FriendGroup? group = await _repo.All<FriendGroup>().FirstOrDefaultAsync(g => g.Id == groupId);
 
             if (group == null)
                 throw new KeyNotFoundException("No group with specified id was found");
@@ -428,7 +418,10 @@ namespace QuestGiver.Services.Quests
         /// <inheritdoc />
         public async Task<List<QuestDTO>> GetAllUserQuests(Guid userId)
         {
-            var res = await _repo.AllReadonly<Quest>().Where(x => x.UserId == userId && x.ScheduledDate <= DateTime.UtcNow).ToListAsync();
+            var res = await _repo.AllReadonly<Quest>()
+                .Where(x => x.UserId == userId && x.ScheduledDate <= DateTime.UtcNow) // Do not load future quests, as they are a kind of surprise
+                .ToListAsync();
+
             return _mapper.Map<List<QuestDTO>>(res);
         }
     }
