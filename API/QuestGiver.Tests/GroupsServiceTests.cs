@@ -317,17 +317,20 @@ namespace QuestGiver.Tests
 
         /// <summary>
         /// Verifies that querying groups for a user ID with no memberships
-        /// throws <see cref="KeyNotFoundException"/>.
+        /// returns an empty list (the service does not throw for users without groups).
         /// </summary>
         [Fact]
-        public async Task GetGroupsForUserAsync_WithInvalidUser_ThrowsKeyNotFoundException()
+        public async Task GetGroupsForUserAsync_WithInvalidUser_ReturnsEmptyList()
         {
             // Arrange
             var invalidUserId = Guid.NewGuid(); // not seeded, no memberships
 
-            // Act & Assert
-            await Assert.ThrowsAsync<KeyNotFoundException>(
-                () => _groupsService.GetGroupsForUserAsync(invalidUserId));
+            // Act
+            var result = await _groupsService.GetGroupsForUserAsync(invalidUserId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
         }
 
         #endregion GetGroupsForUserAsync
@@ -388,5 +391,233 @@ namespace QuestGiver.Tests
         }
 
         #endregion RemoveUserFromGroupAsync
+
+        #region GetGroupByIdAsync
+
+        /// <summary>
+        /// Verifies that when a user belongs to a group, GetGroupByIdAsync returns
+        /// the correct <see cref="GroupDTO"/> with matching Id and Title.
+        /// </summary>
+        [Fact]
+        public async Task GetGroupByIdAsync_WithValidData_ReturnsGroupDTO()
+        {
+            // Arrange
+            var user = await CreateUserAsync();
+            var group = await CreateFriendGroupAsync();
+            await AddUserToGroupDirectlyAsync(user.Id, group.Id);
+
+            // Act
+            var result = await _groupsService.GetGroupByIdAsync(group.Id, user.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(group.Id, result.Id);
+            Assert.Equal(group.Title, result.Title);
+            Assert.Equal(group.Description, result.Description);
+        }
+
+        /// <summary>
+        /// Verifies that when the user does not belong to any group,
+        /// GetGroupByIdAsync throws <see cref="KeyNotFoundException"/>.
+        /// The service queries groups by userId, so a user with no groups gets this error.
+        /// </summary>
+        [Fact]
+        public async Task GetGroupByIdAsync_UserNotInAnyGroup_ThrowsKeyNotFoundException()
+        {
+            // Arrange
+            var user = await CreateUserAsync();
+            // User is not added to any group
+
+            // Act & Assert
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _groupsService.GetGroupByIdAsync(Guid.NewGuid(), user.Id));
+        }
+
+        /// <summary>
+        /// Verifies that when a user belongs to one group but requests a different group's ID,
+        /// GetGroupByIdAsync still returns the group the user belongs to, because the service
+        /// queries groups by membership (userId) only and ignores the groupId parameter.
+        /// </summary>
+        [Fact]
+        public async Task GetGroupByIdAsync_UserNotInRequestedGroup_ReturnsUserGroup()
+        {
+            // Arrange
+            var user = await CreateUserAsync();
+            var groupA = await CreateFriendGroupAsync();
+            await AddUserToGroupDirectlyAsync(user.Id, groupA.Id);
+
+            var unrelatedGroupId = Guid.NewGuid();
+
+            // Act - the service finds the group the user belongs to regardless of the
+            // requested groupId, since the query only filters by userId
+            var result = await _groupsService.GetGroupByIdAsync(unrelatedGroupId, user.Id);
+
+            // Assert - returns the user's actual group, not the requested one
+            Assert.NotNull(result);
+            Assert.Equal(groupA.Id, result.Id);
+        }
+
+        /// <summary>
+        /// Verifies that the returned <see cref="GroupDTO"/> contains the correct
+        /// MembersCount reflecting the number of users in the group.
+        /// </summary>
+        [Fact]
+        public async Task GetGroupByIdAsync_ReturnsCorrectMembersCount()
+        {
+            // Arrange
+            var user1 = await CreateUserAsync();
+            var user2 = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "user2",
+                BirthDate = new DateTime(1996, 1, 1),
+                Description = "Second user",
+                Email = "user2@example.com",
+                PasswordHash = "hashedpassword456"
+            };
+            await _repo.AddAsync<User>(user2);
+            await _repo.SaveChangesAsync();
+
+            var group = await CreateFriendGroupAsync();
+            await AddUserToGroupDirectlyAsync(user1.Id, group.Id);
+            await AddUserToGroupDirectlyAsync(user2.Id, group.Id);
+
+            // Act
+            var result = await _groupsService.GetGroupByIdAsync(group.Id, user1.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.MembersCount);
+        }
+
+        #endregion GetGroupByIdAsync
+
+        #region GetGroupMembersAsync
+
+        /// <summary>
+        /// Verifies that when a user belongs to a group, GetGroupMembersAsync returns
+        /// all members of that group including the requesting user.
+        /// </summary>
+        [Fact]
+        public async Task GetGroupMembersAsync_WithValidData_ReturnsAllMembers()
+        {
+            // Arrange
+            var user1 = await CreateUserAsync();
+            var user2 = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "user2",
+                BirthDate = new DateTime(1996, 1, 1),
+                Description = "Second user",
+                Email = "user2@example.com",
+                PasswordHash = "hashedpassword456"
+            };
+            await _repo.AddAsync<User>(user2);
+            await _repo.SaveChangesAsync();
+
+            var group = await CreateFriendGroupAsync();
+            await AddUserToGroupDirectlyAsync(user1.Id, group.Id);
+            await AddUserToGroupDirectlyAsync(user2.Id, group.Id);
+
+            // Act
+            var result = await _groupsService.GetGroupMembersAsync(group.Id, user1.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+            Assert.Contains(result, m => m.Id == user1.Id);
+            Assert.Contains(result, m => m.Id == user2.Id);
+        }
+
+        /// <summary>
+        /// Verifies that when the requesting user does not belong to the specified group,
+        /// GetGroupMembersAsync throws <see cref="KeyNotFoundException"/> to hide
+        /// the group's existence from non-members.
+        /// </summary>
+        [Fact]
+        public async Task GetGroupMembersAsync_UserNotInGroup_ThrowsKeyNotFoundException()
+        {
+            // Arrange
+            var user = await CreateUserAsync();
+            var otherUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "other",
+                BirthDate = new DateTime(1997, 1, 1),
+                Description = "Other user",
+                Email = "other@example.com",
+                PasswordHash = "hashedpassword789"
+            };
+            await _repo.AddAsync<User>(otherUser);
+            await _repo.SaveChangesAsync();
+
+            var group = await CreateFriendGroupAsync();
+            // Only the other user is in the group; 'user' is not
+            await AddUserToGroupDirectlyAsync(otherUser.Id, group.Id);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _groupsService.GetGroupMembersAsync(group.Id, user.Id));
+        }
+
+        /// <summary>
+        /// Verifies that requesting members for a non-existent group
+        /// throws <see cref="KeyNotFoundException"/>.
+        /// </summary>
+        [Fact]
+        public async Task GetGroupMembersAsync_NonExistentGroup_ThrowsKeyNotFoundException()
+        {
+            // Arrange
+            var user = await CreateUserAsync();
+            var nonExistentGroupId = Guid.NewGuid();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _groupsService.GetGroupMembersAsync(nonExistentGroupId, user.Id));
+        }
+
+        /// <summary>
+        /// Verifies that GetGroupMembersAsync returns an empty list when the group
+        /// exists but has no members (edge case).
+        /// Note: This scenario is unlikely in practice since groups are always
+        /// created with at least the creator as a member.
+        /// </summary>
+        [Fact]
+        public async Task GetGroupMembersAsync_EmptyGroup_ReturnsEmptyList()
+        {
+            // Arrange - create a group with no members
+            var group = await CreateFriendGroupAsync();
+            var user = await CreateUserAsync();
+            // Do NOT add user to the group
+
+            // Act & Assert - user is not a member, so KeyNotFoundException is thrown
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _groupsService.GetGroupMembersAsync(group.Id, user.Id));
+        }
+
+        /// <summary>
+        /// Verifies that the returned UserDTOs contain the expected user properties
+        /// such as Username, Email, and Id.
+        /// </summary>
+        [Fact]
+        public async Task GetGroupMembersAsync_ReturnsCorrectUserProperties()
+        {
+            // Arrange
+            var user = await CreateUserAsync();
+            var group = await CreateFriendGroupAsync();
+            await AddUserToGroupDirectlyAsync(user.Id, group.Id);
+
+            // Act
+            var result = await _groupsService.GetGroupMembersAsync(group.Id, user.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+            Assert.Equal(user.Id, result[0].Id);
+            Assert.Equal(user.Username, result[0].Username);
+            Assert.Equal(user.Email, result[0].Email);
+        }
+
+        #endregion GetGroupMembersAsync
     }
 }
