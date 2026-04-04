@@ -56,7 +56,7 @@ api.interceptors.response.use(
         if (!isRefreshing) {
           isRefreshing = true;
 
-          refreshPromise = AuthService.refresh(refreshToken)
+          refreshPromise = AuthService.refreshOnce(refreshToken)
             .then((res) => {
               localStorage.setItem("accessToken", res.token.accessToken);
               localStorage.setItem("refreshToken", res.token.refreshToken);
