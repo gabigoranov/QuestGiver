@@ -1,8 +1,8 @@
 import { Button } from "../ui/button";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { VotesService } from "@/services/votesService";
-import useAuth from "@/hooks/useAuth";
 import type { VoteDTO } from "@/types/Receive/VoteDTO";
+import { UsersService } from "@/services/usersService";
 
 type VoteActionsProps = {
   vote: VoteDTO;
@@ -22,8 +22,12 @@ type VoteActionsProps = {
  * @returns JSX.Element
  */
 export default function VoteActions({ vote, chosenUserId }: VoteActionsProps) {
-  const { user } = useAuth(); // logged-in user
   const queryClient = useQueryClient();
+
+  const {data:user } = useQuery({
+    queryKey: ["me"],
+    queryFn: UsersService.reloadSelf,
+  });
 
   // Mutation to submit user vote
   const submitVote = useMutation({

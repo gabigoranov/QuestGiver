@@ -6,12 +6,10 @@ import type { CreateUserDTO } from "@/types/Send/CreateUserDTO";
 import { useEffect, useState } from "react";
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserDTO | null>(null);
   const [token, setToken] = useState<TokenDTO | null>(null);
   const [loading, setLoading] = useState(true); // tracks initial auth restore
 
   const saveData = (user: UserDTO, token: TokenDTO) => {
-    setUser(user);
     setToken(token);
     localStorage.setItem("refreshToken", token.refreshToken);
     localStorage.setItem("accessToken", token.accessToken);
@@ -25,7 +23,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   };
 
   const logout = () => {
-    setUser(null);
     setToken(null);
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("accessToken");
@@ -36,7 +33,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     saveData(res.user, res.token);
   };
 
-  const refresh = async () => {
+  const refreshOnce = async () => {
     const refreshToken = localStorage.getItem("refreshToken");
     if (!refreshToken) {
       logout();
@@ -44,7 +41,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     }
 
     try {
-      const res = await AuthService.refresh(refreshToken);
+      const res = await AuthService.refreshOnce(refreshToken);
       saveData(res.user, res.token);
     } catch {
       logout();
@@ -61,7 +58,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       }
 
       try {
-        const res = await AuthService.refresh(refreshToken);
+        const res = await AuthService.refreshOnce(refreshToken);
         saveData(res.user, res.token);
       } catch {
         //logout();
@@ -74,7 +71,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, login, signUp, refresh, logout, loading }}>
+    <AuthContext.Provider value={{ token, login, signUp, refreshOnce, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

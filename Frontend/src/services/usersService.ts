@@ -9,5 +9,8 @@ export const UsersService = {
     const res = await api.get(`${BASE_URL}/${userId}`);
     return res.data;
   },
-  
+  reloadSelf: async (): Promise<UserDTO> => {
+    const res = await api.get(`${BASE_URL}/me`);
+    return res.data;
+  },
 };
