@@ -171,28 +171,28 @@
   },
   "guide": {
     "formCircle": {
-      "title": "Form Your Circle",
-      "description": "True legends never walk alone. Gather up to 6 of your closest allies to form a private guild."
+      "title": "Gather Your Crew",
+      "description": "Heroes don’t go it alone. Invite up to 6 friends and create your private guild."
     },
     "dailyChoice": {
       "title": "The Daily Choice",
-      "description": "Every sunrise, our AI Overseer selects one player from your circle to receive a unique, personalized quest."
+      "description": "Every day, our AI Overseer picks one member from your crew for a unique, personalized quest."
     },
     "proofOfValor": {
       "title": "Proof of Valor",
-      "description": "Action is the only currency. Upload a photo or video documenting your quest completion before the midnight bell tolls."
+      "description": "Action speaks louder than words. Upload a photo or video of your quest before midnight to prove your success."
     },
     "councilVerdict": {
       "title": "The Council's Verdict",
-      "description": "Your circle acts as the judges. They can authenticate your glory or vote to skip quests that don't fit the vibe."
+      "description": "Your crew judges your efforts. They can validate your success or vote to skip a quest that doesn’t fit."
     },
     "ascension": {
-      "title": "Ascension",
-      "description": "Amass XP, level up your profile, and unlock Legendary-tier quests with higher stakes and greater rewards."
+      "title": "Level Up",
+      "description": "Earn XP, level up, and unlock bigger quests with higher stakes and greater rewards."
     },
-    "beginYour": "Begin Your ",
-    "odyssey": "Odyssey",
-    "description": "QuestBound is a gamified daily adventure for you and your inner circle. Level up your real life, one quest at a time."
+    "beginYour": "Start your ",
+    "odyssey": "adventure",
+    "description": "QuestBound is a gamified adventure for you and your friends. Take on daily quests and level up your real-life experience."
   },
   "joinGroup": {
     "error": "Something went wrong, could not join group..."

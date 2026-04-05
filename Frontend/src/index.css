@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tailwind-animate";
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/space-grotesk";
 @import "@fontsource-variable/manrope";
