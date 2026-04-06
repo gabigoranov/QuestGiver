@@ -13,6 +13,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     setToken(token);
     localStorage.setItem("refreshToken", token.refreshToken);
     localStorage.setItem("accessToken", token.accessToken);
+    
     console.log(user);
     console.log(token);
   };
@@ -30,6 +31,11 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   const signUp = async (data: CreateUserDTO) => {
     const res = await AuthService.signup(data);
+    saveData(res.user, res.token);
+  };
+
+  const loginWithGoogle = async (credential: string) => {
+    const res = await AuthService.loginWithGoogle(credential);
     saveData(res.user, res.token);
   };
 
@@ -71,7 +77,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   }, []);
 
   return (
-    <AuthContext.Provider value={{ token, login, signUp, refreshOnce, logout, loading }}>
+    <AuthContext.Provider value={{ token, login, loginWithGoogle, signUp, refreshOnce, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

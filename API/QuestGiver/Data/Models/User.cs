@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using QuestGiver.Data.Common;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuestGiver.Data.Models
@@ -15,22 +16,21 @@ namespace QuestGiver.Data.Models
         [StringLength(30)]
         public string Username { get; set; }
 
-        [Required]
-        public DateTime BirthDate { get; set; }
+        public DateTime? BirthDate { get; set; }
 
-        [Required]
         [StringLength(200)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Required]
         [EmailAddress]
         public string Email { get; set; }
 
-        [Required]
-        [MinLength(8)]
-        public string PasswordHash { get; set; }
+        [MinLength  (8)]
+        public string? PasswordHash { get; set; }
 
         public string? AvatarUrl { get; set; }
+
+        public AuthProviderType Provider { get; set; } = AuthProviderType.Local;
 
         // Navigation properties
         public virtual UserSettings Settings { get; set; }

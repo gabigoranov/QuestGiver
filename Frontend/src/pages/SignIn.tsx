@@ -7,18 +7,24 @@ import useAuth from "@/hooks/useAuth";
 import { Eye, EyeOff, Mail } from "lucide-react";
 
 // Shadcn UI components
-import { Card    } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  GoogleLogin,
+  type GoogleCredentialResponse,
+} from "@react-oauth/google";
 
 /**
  * Zod schema for sign-in form validation
  */
 const signInSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" }),
 });
 
 /**
@@ -30,7 +36,7 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { t } = useTranslation();
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const {
@@ -45,12 +51,32 @@ export default function SignIn() {
     setLoading(true);
     try {
       await login(data.email, data.password);
-      console.log("Login successful");
+
+      // TODO: Handle setting interests if they are null
+
       navigate("/home"); // Redirect to home after success
     } catch (err) {
       console.error("Login failed:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async (
+    credentialResponse: GoogleCredentialResponse,
+  ) => {
+    setLoading(true);
+
+    try {
+      if (!credentialResponse?.credential) return;
+
+      await loginWithGoogle(credentialResponse.credential);
+
+      // TODO: Handle setting interests if they are null
+
+      navigate("/home"); // redirect after login
+    } catch (err) {
+      console.error("Google login error:", err);
     }
   };
 
@@ -60,9 +86,11 @@ export default function SignIn() {
       <Card className="w-full max-w-sm p-6 space-y-6 bg-card border-border rounded-3xl">
         {/* Heading */}
         <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold tracking-tight">{t('auth.signIn.title')}</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {t("auth.signIn.title")}
+          </h1>
           <p className="text-sm text-on-surface-variant">
-            {t('auth.signIn.subtitle')}
+            {t("auth.signIn.subtitle")}
           </p>
         </div>
 
@@ -70,7 +98,7 @@ export default function SignIn() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Email Field */}
           <div className="space-y-1">
-            <Label>{t('auth.signIn.email')}</Label>
+            <Label>{t("auth.signIn.email")}</Label>
             <div className="relative flex items-center">
               <Mail className="absolute left-3 w-4 h-4 text-on-surface-variant" />
               <Input
@@ -80,15 +108,17 @@ export default function SignIn() {
                 className="pl-10"
               />
             </div>
-            {errors.email && <p className="text-xs text-error">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-xs text-error">{errors.email.message}</p>
+            )}
           </div>
 
           {/* Password Field */}
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <Label>{t('auth.signIn.password')}</Label>
+              <Label>{t("auth.signIn.password")}</Label>
               <Button variant="link" size="sm" type="button">
-                {t('auth.signIn.forgotPassword')}
+                {t("auth.signIn.forgotPassword")}
               </Button>
             </div>
             <div className="relative flex items-center">
@@ -104,23 +134,45 @@ export default function SignIn() {
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-0"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
               </Button>
             </div>
-            {errors.password && <p className="text-xs text-error">{errors.password.message}</p>}
+            {errors.password && (
+              <p className="text-xs text-error">{errors.password.message}</p>
+            )}
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full text-lg font-semibold" disabled={loading}>
-            {loading ? t('auth.signIn.submitting') : t('auth.signIn.submit')}
+          <Button
+            type="submit"
+            className="w-full text-lg font-semibold"
+            disabled={loading}
+          >
+            {loading ? t("auth.signIn.submitting") : t("auth.signIn.submit")}
           </Button>
         </form>
 
+        <GoogleLogin
+          onSuccess={handleGoogleLogin}
+          onError={() => console.error("Login Failed")}
+          shape="pill"
+          theme="outline"
+          size="large"
+        />
+
         {/* Footer */}
         <p className="mt-4 text-center text-xs text-on-surface-variant">
-          {t('auth.signIn.noAccount')}{" "}
-          <Link to="/signup" className="font-semibold text-primary hover:underline" viewTransition>
-            {t('auth.signIn.signUp')}
+          {t("auth.signIn.noAccount")}{" "}
+          <Link
+            to="/signup"
+            className="font-semibold text-primary hover:underline"
+            viewTransition
+          >
+            {t("auth.signIn.signUp")}
           </Link>
         </p>
       </Card>
