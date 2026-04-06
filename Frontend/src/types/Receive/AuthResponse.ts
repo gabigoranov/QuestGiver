@@ -3,5 +3,6 @@ import type { UserDTO } from "./UserDTO";
 
 export type AuthResponse = {
     user: UserDTO,
-    token: TokenDTO
+    token: TokenDTO,
+    hasInterestsInfo: boolean
 };

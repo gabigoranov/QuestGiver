@@ -6,6 +6,7 @@ import { createContext } from "react";
 type AuthContextType = {
   token: TokenDTO | null;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: (credential: string) => Promise<void>;
   signUp: (data: CreateUserDTO) => Promise<void>;
   refreshOnce: () => Promise<void>;
   logout: () => void;

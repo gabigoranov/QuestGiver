@@ -8,6 +8,7 @@ using QuestGiver.Data;
 using QuestGiver.Data.Common;
 using QuestGiver.Middleware;
 using QuestGiver.Services.Groups;
+using QuestGiver.Services.OAuth;
 using QuestGiver.Services.Quests;
 using QuestGiver.Services.Tokens;
 using QuestGiver.Services.Users;
@@ -51,6 +52,7 @@ builder.Services.AddScoped<ITokensService, TokensService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IVotesService, VotesService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
+builder.Services.AddScoped<IOAuthService, OAuthService>();
 builder.Services.AddScoped<IGroupsService, GroupsService>();
 builder.Services.AddScoped<IPasswordHasher<string>, PasswordHasher<string>>();
 builder.Services.AddSingleton(sp =>

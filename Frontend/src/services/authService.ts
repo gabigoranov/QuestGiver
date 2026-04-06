@@ -3,6 +3,7 @@ import type { CreateUserDTO } from "@/types/Send/CreateUserDTO";
 import { api } from "./api";
 
 const BASE_URL = "/auth";
+const OAUTH_URL = "/oauth";
 let refreshPromise: Promise<AuthResponse> | null = null;
 
 // Service for handling authentication-related API calls
@@ -15,6 +16,16 @@ export const AuthService = {
     const res = await api.post(`${BASE_URL}`, data);
     return res.data;
   },
+
+  loginWithGoogle: async (
+    credential: string,
+  ): Promise<AuthResponse> => {
+    const res = await api.post(`${OAUTH_URL}/google`, {
+      idToken: credential,
+    });
+    return res.data;
+  },
+
   // Used to refresh the auth ( JWT ) token when it expires
   // Make it single flight to prevent race conditions
   refreshOnce: async (refreshToken: string): Promise<AuthResponse> => {

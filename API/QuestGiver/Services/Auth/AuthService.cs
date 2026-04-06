@@ -32,6 +32,15 @@ namespace QuestGiver.Services.Users
             _tokensService = tokensService;
         }
 
+        private void ValidateUser(User user)
+        {
+            if (user.Provider == AuthProviderType.Local && string.IsNullOrEmpty(user.PasswordHash))
+                throw new Exception("Local users must have a password.");
+
+            if (user.Provider != AuthProviderType.Local && !string.IsNullOrEmpty(user.PasswordHash))
+                throw new Exception("OAuth users should not have a password.");
+        }
+
         /// <inheritdoc />
         public async Task<AuthResponse> CreateUserAsync(CreateUserDTO model)
         {
@@ -50,7 +59,7 @@ namespace QuestGiver.Services.Users
             UserDTO userMap = _mapper.Map<UserDTO>(user);
             TokenDTO token = await _tokensService.CreateTokenAsync(user.Id);
 
-            return new AuthResponse(userMap, token);
+            return new AuthResponse(userMap, token, user.Description != null);
         }
 
         /// <inheritdoc/>
@@ -59,7 +68,7 @@ namespace QuestGiver.Services.Users
             Token token = await _tokensService.RefreshTokenAsync(refreshToken);
             User user = await _repo.GetByIdAsync<User>(token.UserId);
 
-            return new AuthResponse(_mapper.Map<UserDTO>(user), _mapper.Map<TokenDTO>(token));
+            return new AuthResponse(_mapper.Map<UserDTO>(user), _mapper.Map<TokenDTO>(token), user.Description != null);
         }
 
         /// <inheritdoc />
@@ -70,15 +79,17 @@ namespace QuestGiver.Services.Users
             if (user == null)
                 throw new ArgumentException("No user with such email exists.");
 
-            var result = _passwordHasher.VerifyHashedPassword(user.Email, user.PasswordHash, model.Password);
+            ValidateUser(user);
+
+            var result = _passwordHasher.VerifyHashedPassword(user.Email, user.PasswordHash!, model.Password);
 
             if (result == PasswordVerificationResult.Failed)
                 throw new UnauthorizedAccessException("Supplied password does not match user profile.");
-
+            
             UserDTO userMap = _mapper.Map<UserDTO>(user);
             TokenDTO token = await _tokensService.CreateTokenAsync(user.Id);
 
-            return new AuthResponse(userMap, token);
+            return new AuthResponse(userMap, token, user.Description != null);
         }
     }
 }

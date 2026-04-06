@@ -3,10 +3,11 @@ import { useTranslation } from "react-i18next";
 import { QuestsService } from "@/services/questsService";
 import StaticQuestCard from "@/components/quests/StaticQuestCard";
 import { UsersService } from "@/services/usersService";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 
 export default function Profile() {
   const { t } = useTranslation();
-  const {data:user, isLoading } = useQuery({
+  const { data: user, isLoading } = useQuery({
     queryKey: ["me"],
     queryFn: UsersService.reloadSelf,
   });
@@ -27,13 +28,16 @@ export default function Profile() {
       {/* PROFILE HEADER */}
       <div className="flex flex-col items-center gap-4 text-center">
         <div className="p-0.5 rounded-full">
-          <img
-            src={
-              user.avatarUrl ||
-              `https://api.dicebear.com/7.x/initials/svg?seed=${user.username}`
-            }
+          <Avatar
             className="w-24 h-24 rounded-full object-cover "
-          />
+          >
+            <AvatarImage
+              src={
+                user.avatarUrl ??
+                `https://api.dicebear.com/7.x/initials/svg?seed=${user.username}`
+              }
+            />
+          </Avatar>
         </div>
 
         <div>
@@ -51,7 +55,10 @@ export default function Profile() {
         </span>
 
         <div className="flex justify-between items-center font-bold">
-          <span className="text-lg">{t("profile.progressToLevel")}{user.level + 1}</span>
+          <span className="text-lg">
+            {t("profile.progressToLevel")}
+            {user.level + 1}
+          </span>
           <span className="text-sm font-semibold">{Math.floor(progress)}%</span>
         </div>
 
@@ -70,13 +77,19 @@ export default function Profile() {
 
       {/* QUEST HISTORY */}
       <div className="w-full max-w-md flex flex-col gap-4">
-        <h2 className="text-lg font-semibold font-heading">{t("profile.questHistory")}</h2>
+        <h2 className="text-lg font-semibold font-heading">
+          {t("profile.questHistory")}
+        </h2>
 
         {/* QUEST ITEMS */}
         {!data ? (
-          <div className="text-muted-foreground text-sm">{t("profile.loadingQuests")}</div>
+          <div className="text-muted-foreground text-sm">
+            {t("profile.loadingQuests")}
+          </div>
         ) : data.length === 0 ? (
-          <div className="text-muted-foreground text-sm">{t("profile.noQuests")}</div>
+          <div className="text-muted-foreground text-sm">
+            {t("profile.noQuests")}
+          </div>
         ) : (
           data.map((quest) => <StaticQuestCard key={quest.id} quest={quest} />)
         )}
