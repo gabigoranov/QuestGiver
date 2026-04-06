@@ -119,7 +119,7 @@ export default function SignIn() {
         {/* Footer */}
         <p className="mt-4 text-center text-xs text-on-surface-variant">
           {t('auth.signIn.noAccount')}{" "}
-          <Link to="/signup" className="font-semibold text-primary hover:underline">
+          <Link to="/signup" className="font-semibold text-primary hover:underline" viewTransition>
             {t('auth.signIn.signUp')}
           </Link>
         </p>

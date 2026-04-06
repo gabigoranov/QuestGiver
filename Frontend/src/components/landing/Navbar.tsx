@@ -19,7 +19,7 @@ export default function Navbar() {
     >
       <AppLogo />
 
-      <Link to="/home">
+      <Link to="/home" viewTransition>
         <Button
           value="primary"
           className="text-lg font-semibold"

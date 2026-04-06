@@ -170,7 +170,7 @@ export default function SignUp() {
         {/* Footer */}
         <p className="mt-4 text-center text-xs text-on-surface-variant">
           {t('auth.signUp.hasAccount')}{" "}
-          <Link to="/signin" className="font-semibold text-primary hover:underline">
+          <Link to="/signin" className="font-semibold text-primary hover:underline" viewTransition>
             {t('auth.signUp.signIn')}
           </Link>
         </p>

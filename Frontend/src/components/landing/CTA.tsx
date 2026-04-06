@@ -27,7 +27,7 @@ export default function CTA() {
       </p>
 
       {/* CTA Button */}
-      <Link to="/home">
+      <Link to="/home" viewTransition>
         <Button className="uppercase px-12 py-8 font-bold text-2xl rounded-full shadow-glow-primary mt-6 mb-24">
           {t("cta.button")}
         </Button>

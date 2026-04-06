@@ -3,8 +3,8 @@
   "short_name": "QuestBound",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "background_color": "#0e0e0e",
+  "theme_color": "#6d28d9",
   "icons": [
     {
       "src": "/icons/icon-192.png",

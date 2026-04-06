@@ -24,7 +24,7 @@ export default function NavItem({
   return (
     <button
       onClick={() => onClick(path)}
-      className="flex-1 flex justify-center"
+      className={"flex-1 flex justify-center"}
     >
       {/* Inner container controls visual state */}
       <div

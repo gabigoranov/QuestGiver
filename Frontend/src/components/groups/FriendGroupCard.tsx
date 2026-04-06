@@ -37,13 +37,13 @@ export default function FriendGroupCard(data: GroupDTO) {
   return (
     <div className="border border-border w-full h-auto bg-card rounded-3xl p-8">
       {/* top info bar */}
-      <div className="flex flex-row items-start justify-between mb-4">
+      <div className="flex flex-row items-stretch justify-between mb-4">
         <InfoTag
           title={questStatusMap[data.currentQuestStatus]?.title}
           colorVariant={questStatusMap[data.currentQuestStatus]?.colorVariant}
         />
 
-        <span className="text-muted-foreground font-semibold">
+        <span className="text-muted-foreground font-semibold text-center flex items-center">
           {t("groups.card.created")}{" "}
           {data.dateCreated.toLocaleDateString("en-US", {
             day: "numeric",
@@ -69,7 +69,7 @@ export default function FriendGroupCard(data: GroupDTO) {
           {data.membersCount} {t("groups.card.members")}
         </span>
 
-        <Link to={`/group/${data.id}`}>
+        <Link to={`/group/${data.id}`} viewTransition>
           <Button className="px-6 py-5 rounded-full text-sm font-semibold">
             {t("groups.card.enterGroup")}
           </Button>

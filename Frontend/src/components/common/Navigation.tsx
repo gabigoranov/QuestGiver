@@ -20,35 +20,35 @@ export default function Navigation() {
         label={t('navigation.quests')}
         path="/home"
         active={isActive("/home")}
-        onClick={navigate}
+        onClick={(path: string) => { navigate(path, { viewTransition: true })}}
       />
       <NavItem
         icon={Users}
         label={t('navigation.groups')}
         path="/groups"
         active={isActive("/groups")}
-        onClick={navigate}
+        onClick={(path: string) => { navigate(path, { viewTransition: true })}}
       />
       <NavItem
         icon={Plus}
         label={t('navigation.create')}
         path="/create"
         active={isActive("/create")}
-        onClick={navigate}
+        onClick={(path: string) => { navigate(path, { viewTransition: true })}}
       />
       <NavItem
         icon={LucideBookOpen}
         label={t('navigation.guide')}
         path="/guide"
         active={isActive("/guide")}
-        onClick={navigate}
+        onClick={(path: string) => { navigate(path, { viewTransition: true })}}
       />
       <NavItem
         icon={User}
         label={t('navigation.profile')}
         path="/profile"
         active={isActive("/profile")}
-        onClick={navigate}
+        onClick={(path: string) => { navigate(path, { viewTransition: true })}}
       />
     </nav>
   );

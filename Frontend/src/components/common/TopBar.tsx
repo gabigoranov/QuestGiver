@@ -26,7 +26,7 @@ export default function TopBar() {
         </button>
 
         {/* Logo */}
-        <Link to="/">
+        <Link to="/" viewTransition>
           <AppLogo />
         </Link>
 
